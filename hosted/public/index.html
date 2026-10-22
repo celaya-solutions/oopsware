@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="An open library of uploaded files, inspected and explained. Browse, look inside, and download freely. No account."
+    />
+    <title>Oopsware — the open file library</title>
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/config.js"></script>
+    <script type="module" src="/site.js"></script>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#catalog">Skip to the library</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/" class="brand" aria-label="Oopsware home">
+          <span class="brand-mark" aria-hidden="true">::</span>oopsware<span
+            class="brand-divider"
+          ></span
+          ><span class="brand-subtitle">Library</span>
+        </a>
+        <button
+          class="icon-button nav-toggle"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          ≡
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <a href="/">Library</a>
+          <a href="/formats">File types</a>
+          <a href="/about">About</a>
+          <a href="/report">Report a file</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero wrap" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">
+            <span class="live-dot"></span> Open files · shared findings
+          </p>
+          <h1 id="page-title">
+            A little curiosity.<br /><em>A lot to uncover.</em>
+          </h1>
+          <p class="hero-copy">
+            Upload a file and the library looks inside it. Browse what others
+            found, read the findings, and download anything — no account.
+          </p>
+          <a href="#catalog" class="hero-link"
+            >Browse the library <span aria-hidden="true">→</span></a
+          >
+        </div>
+        <aside class="hero-note" aria-label="How the library works">
+          <span class="note-index">FIELD NOTES / 001</span>
+          <h2>Nothing is hidden.</h2>
+          <div class="file-stack" aria-hidden="true">
+            <span><span>upload</span><span>.zip</span></span>
+            <span><span>inspect</span><span>.json</span></span>
+            <span><span>read</span><span>.md</span></span>
+          </div>
+          <div class="note-foot">
+            <span>Free to explore</span><span>No account</span>
+          </div>
+        </aside>
+      </section>
+
+      <section
+        class="catalog wrap"
+        id="catalog"
+        aria-labelledby="catalog-title"
+      >
+        <div class="catalog-heading">
+          <h2 id="catalog-title">
+            The commons <span id="total-count" class="count-badge">—</span>
+          </h2>
+          <div class="view-switch" role="group" aria-label="What to browse">
+            <button data-view="files" aria-pressed="true">Files</button>
+            <button data-view="prompts" aria-pressed="false">
+              Build prompts
+            </button>
+          </div>
+        </div>
+
+        <div id="files-panel">
+          <div class="catalog-toolbar">
+            <label class="search-box">
+              <span aria-hidden="true">/</span>
+              <span class="sr-only">Search files by name</span>
+              <input id="search" type="search" placeholder="Search by name" />
+              <kbd aria-hidden="true">/</kbd>
+            </label>
+            <label class="sort-label"
+              >Sort
+              <select id="sort">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="name">Name A–Z</option>
+                <option value="size">Largest first</option>
+              </select></label
+            >
+            <button
+              id="refresh"
+              class="icon-button"
+              aria-label="Refresh the library"
+            >
+              ↻
+            </button>
+          </div>
+
+          <div class="catalog-layout">
+            <aside class="filters" aria-label="Filters">
+              <div>
+                <p class="filter-heading">Browse by type</p>
+                <div class="category-list">
+                  <button data-category="all" aria-pressed="true">
+                    Everything <span>—</span>
+                  </button>
+                  <button data-category="archives" aria-pressed="false">
+                    Archives <span>—</span>
+                  </button>
+                  <button data-category="apps" aria-pressed="false">
+                    Apps &amp; binaries <span>—</span>
+                  </button>
+                  <button data-category="source" aria-pressed="false">
+                    Source <span>—</span>
+                  </button>
+                  <button data-category="data" aria-pressed="false">
+                    Data <span>—</span>
+                  </button>
+                  <button data-category="documents" aria-pressed="false">
+                    Documents <span>—</span>
+                  </button>
+                  <button data-category="media" aria-pressed="false">
+                    Media <span>—</span>
+                  </button>
+                  <button data-category="models" aria-pressed="false">
+                    Models <span>—</span>
+                  </button>
+                  <button data-category="other" aria-pressed="false">
+                    Other <span>—</span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="status-label" for="status"
+                  >Inspection status</label
+                >
+                <select id="status">
+                  <option value="all">Any status</option>
+                  <option value="ready">Ready to explore</option>
+                  <option value="processing">In progress</option>
+                  <option value="failed">Needs attention</option>
+                </select>
+              </div>
+              <div class="contribute-note">
+                <h3>Found something?</h3>
+                <p>Share a file and give someone else a place to start.</p>
+                <button class="text-button" data-upload>Upload a file →</button>
+              </div>
+            </aside>
+
+            <div class="results">
+              <div class="results-heading">
+                <p id="archive-count" role="status" aria-live="polite">
+                  Loading the library…
+                </p>
+                <button id="clear-filters" class="text-button" hidden>
+                  Clear filters ×
+                </button>
+              </div>
+              <div id="submissions" class="card-grid" aria-busy="true">
+                <div class="loading-card"></div>
+                <div class="loading-card"></div>
+                <div class="loading-card"></div>
+              </div>
+              <button id="load-more" class="button load-more" hidden>
+                Load more <span aria-hidden="true">↓</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="prompts-panel" class="prompts-panel" hidden>
+          <div class="prompts-empty">
+            <span class="note-index">BUILD PROMPTS / SOON</span>
+            <h3>Rebuild it yourself.</h3>
+            <p>
+              Soon, every upload will come with a full, plain-language prompt
+              that recreates something like it — so you can study a file and
+              then build your own. This section will fill up once that is
+              switched on.
+            </p>
+            <div class="prompts-filters" aria-hidden="true">
+              <span>By type</span><span>By language</span><span>By size</span
+              ><span>Newest</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <a href="/" class="brand"
+          ><span class="brand-mark" aria-hidden="true">::</span>oopsware</a
+        >
+        <nav aria-label="Site">
+          <a href="/formats">File types</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/report">Report a file</a>
+          <a href="/about">About</a>
+        </nav>
+        <span class="footer-note">Stay curious. Leave it useful.</span>
+      </div>
+    </footer>
+
+    <div id="notice" class="notice" role="status" hidden>
+      <span id="notice-text"></span
+      ><button id="dismiss-notice" aria-label="Dismiss message">×</button>
+    </div>
+
+    <dialog id="upload-dialog" aria-labelledby="upload-title">
+      <div class="dialog-heading">
+        <p class="eyebrow">Add to the commons</p>
+        <button id="close-upload" class="icon-button" aria-label="Close upload">
+          ×
+        </button>
+      </div>
+      <h2 id="upload-title">What did you find?</h2>
+      <p class="muted">
+        Share a file. We inspect it and publish the findings next to the
+        original.
+      </p>
+      <form id="upload-form">
+        <label id="drop-zone" class="drop-zone">
+          <span class="upload-symbol" aria-hidden="true">↥</span>
+          <strong id="file-name">Choose a file or drop it here</strong>
+          <span id="file-detail"
+            >Apps, archives, source, documents · up to 1 GiB</span
+          >
+          <input
+            id="file-input"
+            type="file"
+            aria-label="Choose a file"
+            required
+          />
+        </label>
+        <label class="retain-toggle">
+          <input id="retain" type="checkbox" checked />
+          <span class="retain-text">
+            <strong>Delete automatically after 24 hours</strong>
+            <span
+              >The file, anything found inside it, and its findings are removed
+              a day after upload. Uncheck to keep it until an operator removes
+              it.</span
+            >
+          </span>
+        </label>
+        <label class="agreement">
+          <input id="agreement" type="checkbox" required />
+          <span
+            >I have the right to share this file, and it holds no personal data
+            or secrets. Uploads are public.</span
+          >
+        </label>
+        <div id="upload-progress" hidden>
+          <progress
+            id="progress-bar"
+            max="100"
+            value="0"
+            aria-label="Upload progress"
+          ></progress>
+          <p id="upload-status"></p>
+        </div>
+        <div class="upload-actions">
+          <button id="upload-button" class="button button-dark" type="submit">
+            Upload &amp; inspect <span aria-hidden="true">↗</span>
+          </button>
+          <button id="cancel-upload" class="text-button" type="button" hidden>
+            Cancel
+          </button>
+        </div>
+        <p class="fine-print">
+          Uploaded programs are never run. Static inspection only — no safety
+          verdict is implied.
+        </p>
+      </form>
+    </dialog>
+
+    <dialog
+      id="detail-dialog"
+      class="detail-dialog"
+      aria-labelledby="investigation-name"
+    >
+      <div class="detail-top">
+        <p class="eyebrow">From the library</p>
+        <button
+          id="close-investigation"
+          class="icon-button"
+          aria-label="Close details"
+        >
+          ×
+        </button>
+      </div>
+      <h2 id="investigation-name"></h2>
+      <div class="detail-heading">
+        <p id="investigation-meta"></p>
+        <div class="detail-actions">
+          <button id="copy-link" class="text-button">Copy link</button>
+          <a id="download-original" class="button button-dark"
+            >Download original ↓</a
+          >
+        </div>
+      </div>
+      <p id="detail-summary" class="detail-summary"></p>
+      <div class="detail-tabs" role="tablist" aria-label="Item details">
+        <button
+          id="tab-report"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-report"
+          data-tab="report"
+        >
+          Overview
+        </button>
+        <button
+          id="tab-files"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-files"
+          data-tab="files"
+          tabindex="-1"
+        >
+          Files
+        </button>
+      </div>
+      <section id="panel-report" role="tabpanel" aria-labelledby="tab-report">
+        <p id="report-status" class="hint"></p>
+        <div id="report-content"></div>
+      </section>
+      <section
+        id="panel-files"
+        role="tabpanel"
+        aria-labelledby="tab-files"
+        hidden
+      >
+        <div class="files-layout">
+          <aside>
+            <label class="sr-only" for="file-search"
+              >Find a file in this item</label
+            >
+            <input id="file-search" type="search" placeholder="Find a file…" />
+            <div id="file-list"></div>
+            <button id="more-files" class="text-button" hidden>
+              Show more files
+            </button>
+          </aside>
+          <div id="preview-area" class="preview-area"></div>
+        </div>
+      </section>
+    </dialog>
+  </body>
+</html>

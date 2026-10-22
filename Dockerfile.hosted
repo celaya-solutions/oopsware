@@ -1,0 +1,22 @@
+FROM node:24.18.0-bookworm-slim AS build
+WORKDIR /app
+RUN test "$(node --version)" = "v24.18.0" && npm install --global npm@11.16.0
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY src ./src
+COPY scripts/build-hosted.mjs ./scripts/build-hosted.mjs
+COPY hosted ./hosted
+RUN npm run hosted:build && npm prune --omit=dev --ignore-scripts
+
+FROM node:24.18.0-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production PORT=8080 REA_PUBLIC_DATA=/data/rea-public
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist-hosted ./dist-hosted
+COPY --from=build /app/package.json ./package.json
+COPY CREDITS.md ./CREDITS.md
+COPY LICENSES ./LICENSES
+COPY scripts/hosted-entrypoint.mjs ./scripts/hosted-entrypoint.mjs
+RUN mkdir -p /data/rea-public
+EXPOSE 8080
+CMD ["node", "scripts/hosted-entrypoint.mjs"]

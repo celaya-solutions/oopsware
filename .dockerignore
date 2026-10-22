@@ -1,0 +1,14 @@
+**
+!package.json
+!package-lock.json
+!src/
+!src/**
+!scripts/
+!scripts/build-hosted.mjs
+!scripts/hosted-entrypoint.mjs
+!hosted/
+!hosted/**
+!Dockerfile.hosted
+!CREDITS.md
+!LICENSES/
+!LICENSES/**

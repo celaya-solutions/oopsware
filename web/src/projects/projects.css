@@ -1,0 +1,299 @@
+/* Projects: list, open project, and its parts. Uses the shared theme tokens. */
+.projects-page,
+.project-view {
+  padding: 1rem 1.125rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.875rem;
+  min-width: 0;
+}
+.project-view [role="tablist"] {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.projects-lede {
+  margin: 0;
+  max-width: 62ch;
+}
+.project-create,
+.project-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.project-create input,
+.project-add input,
+.project-add select,
+.project-add textarea,
+.project-edit textarea,
+.project-title-input {
+  min-width: 0;
+  flex: 1 1 12rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  font-size: var(--text-small);
+}
+.project-add textarea,
+.project-edit textarea {
+  width: 100%;
+  resize: vertical;
+}
+.project-add {
+  display: grid;
+  gap: 0.5rem;
+}
+.project-list,
+.project-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.375rem;
+}
+.project-row,
+.project-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 0.625rem 0.75rem;
+  min-width: 0;
+}
+.project-item {
+  display: grid;
+  justify-content: stretch;
+}
+.project-item-inline {
+  display: flex;
+  justify-content: flex-start;
+}
+.project-item-inline small {
+  flex: 1 1 10rem;
+}
+.project-row.active {
+  border-color: var(--ring);
+}
+.project-row-main {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.project-row-main strong,
+.project-item strong {
+  font-size: var(--text-small);
+  overflow-wrap: anywhere;
+}
+.project-row-actions,
+.project-item-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+.project-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.project-note-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--text-small);
+}
+.project-edit {
+  display: grid;
+  gap: 0.375rem;
+  justify-items: start;
+}
+.project-path {
+  font-size: var(--text-caption);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.project-view-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.project-title-input {
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+.project-runs {
+  display: grid;
+  gap: 0.75rem;
+}
+.project-runs tr.muted td {
+  color: var(--muted);
+}
+.project-run-view {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.project-empty {
+  padding: 1rem 0;
+}
+.project-apply {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--soft);
+  padding: 0.625rem 0.75rem;
+  display: grid;
+  gap: 0.375rem;
+}
+.project-apply p {
+  margin: 0;
+  font-size: var(--text-small);
+}
+.project-apply.caution {
+  border-color: #e9d6b4;
+  background: #fff7e8;
+  color: #a16e2d;
+}
+[data-theme="dark"] .project-apply.caution {
+  border-color: #5a4a30;
+  background: #3c3325;
+  color: #d9b986;
+}
+.badge.caution {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  color: #a16e2d;
+}
+[data-theme="dark"] .badge.caution {
+  color: #d9b986;
+}
+.project-chip {
+  display: inline-flex;
+  gap: 0.375rem;
+  align-items: center;
+  margin-left: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.125rem 0.625rem;
+  font-size: var(--text-caption);
+  background: var(--soft);
+  color: var(--text);
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.project-description {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  font: inherit;
+  font-size: var(--text-small);
+  resize: vertical;
+}
+@media (max-width: 640px) {
+  .projects-page,
+  .project-view {
+    padding: 0.75rem;
+  }
+  .project-row,
+  .project-item-inline {
+    display: grid;
+  }
+}
+
+/* Reports tab */
+.report-tab {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.report-build {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.report-build legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+.report-build p {
+  margin: 0;
+}
+.report-runs,
+.report-saved {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.report-runs label,
+.report-format label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.report-format {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+.report-saved {
+  max-height: none;
+}
+.report-saved li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.35rem;
+}
+.report-saved-title {
+  margin: 0.25rem 0 0;
+  font-size: var(--text-small);
+}
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.report-build input[type="radio"],
+.report-build input[type="checkbox"] {
+  width: auto;
+  flex: none;
+  margin: 0;
+}

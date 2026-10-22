@@ -1,0 +1,158 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { isAbsolute, join, relative, sep } from "node:path";
+import { expect, it } from "vitest";
+import { LocalWebScriptArtifacts } from "../../../src/browser/assets/LocalWebScriptArtifacts.js";
+import { projectAnalysisError } from "../../../src/domain/analysisErrorProjection.js";
+import { createTestTempDirectory } from "../../fixtures/temporaryDirectory.js";
+import { webModuleArtifactsFixture } from "../../fixtures/webModuleTrace.js";
+
+const materialize = async () => {
+  const root = join(
+    await createTestTempDirectory("rea-script-manifest-path-"),
+    "export with spaces",
+  );
+  const artifact = webModuleArtifactsFixture();
+  await mkdir(join(root, "files", "modules"), { recursive: true });
+  await mkdir(join(root, "nested"));
+  const sourcePath = join(root, "files", "modules", "main.js");
+  const manifestPath = join(root, "manifest.json");
+  await writeFile(sourcePath, artifact.source);
+  await writeFile(manifestPath, JSON.stringify(artifact.manifest));
+  return { root, artifact, sourcePath, manifestPath };
+};
+
+it("reads equivalent local manifest spellings without changing reported identity", async () => {
+  const fixture = await materialize();
+  const paths = new Set([
+    fixture.manifestPath,
+    fixture.manifestPath.replaceAll("\\", "/"),
+    `${fixture.root}${sep}nested${sep}..${sep}manifest.json`,
+  ]);
+  const fromWorkingDirectory = relative(process.cwd(), fixture.manifestPath);
+  // A target on another Windows drive has no relative path from this cwd.
+  if (!isAbsolute(fromWorkingDirectory))
+    paths.add(`.${sep}${fromWorkingDirectory}`);
+  for (const operation of [
+    "trace_web_module_imports",
+    "trace_web_source_location",
+  ] as const) {
+    for (const manifestPath of paths) {
+      const response = await new LocalWebScriptArtifacts(operation).load({
+        manifest_path: manifestPath,
+        script_index: 0,
+      });
+      if (!response.ok) throw response.error;
+      expect(response.value.source).toBe(fixture.artifact.source);
+      expect(response.value.sourceFile).toEqual({
+        ...fixture.artifact.sourceFile,
+        path: fixture.sourcePath,
+      });
+      expect(response.value.manifestFile.path).toBe(manifestPath);
+      expect(response.value.manifest.output_directory).toBe(
+        fixture.artifact.manifest.output_directory,
+      );
+      expect(response.value.manifest.scripts[0]?.url).toBe(
+        fixture.artifact.manifest.scripts[0]?.url,
+      );
+    }
+  }
+});
+
+it("still rejects changed source bytes after normalizing the selected manifest path", async () => {
+  const fixture = await materialize();
+  await writeFile(fixture.sourcePath, "tampered source");
+  const response = await new LocalWebScriptArtifacts(
+    "trace_web_module_imports",
+  ).load({
+    manifest_path: `${fixture.root}/nested/../manifest.json`.replaceAll(
+      "\\",
+      "/",
+    ),
+    script_index: 0,
+  });
+  if (response.ok) throw new Error("Expected source integrity mismatch");
+  expect(projectAnalysisError(response.error).code).toBe(
+    "artifact_integrity_mismatch",
+  );
+});
+
+const literalManifest = async () => {
+  const fixture = await materialize();
+  const selected = fixture.artifact.manifest.scripts[0];
+  if (selected?.content.state !== "exported")
+    throw new Error("Expected exported source");
+  selected.content.relative_path = "..\\sibling.js";
+  await writeFile(join(fixture.root, "sibling.js"), fixture.artifact.source);
+  if (process.platform !== "win32")
+    await writeFile(
+      join(fixture.root, "files", selected.content.relative_path),
+      fixture.artifact.source,
+    );
+  await writeFile(
+    fixture.manifestPath,
+    JSON.stringify(fixture.artifact.manifest),
+  );
+  return fixture;
+};
+
+it.each(["trace_web_module_imports", "trace_web_source_location"] as const)(
+  "refuses Windows backslash source interpretation for %s",
+  async (operation) => {
+    const fixture = await literalManifest();
+    const originalPlatform = Object.getOwnPropertyDescriptor(
+      process,
+      "platform",
+    );
+    const artifacts = new LocalWebScriptArtifacts(operation);
+    let response;
+    try {
+      // Exercise the Windows admission branch; this is not native Windows IO.
+      Object.defineProperty(process, "platform", { value: "win32" });
+      response = await artifacts.load({
+        manifest_path: fixture.manifestPath,
+        script_index: 0,
+      });
+    } finally {
+      if (originalPlatform !== undefined)
+        Object.defineProperty(process, "platform", originalPlatform);
+      await artifacts.close();
+    }
+    if (response.ok) throw new Error("Expected Windows source path refusal");
+    expect(projectAnalysisError(response.error)).toMatchObject({
+      code: "invalid_request",
+      details: {
+        issues: [
+          {
+            path: ["script_index"],
+            reason: "invalid_value",
+            message: expect.stringContaining(
+              "Windows source path cannot contain backslashes",
+            ),
+          },
+        ],
+      },
+    });
+  },
+);
+
+it.skipIf(process.platform === "win32")(
+  "reads the same saved POSIX literal name without selecting its sibling",
+  async () => {
+    const fixture = await literalManifest();
+    await writeFile(join(fixture.root, "sibling.js"), "wrong sibling source");
+    const artifacts = new LocalWebScriptArtifacts("trace_web_module_imports");
+    try {
+      const result = await artifacts.load({
+        manifest_path: fixture.manifestPath,
+        script_index: 0,
+      });
+      if (!result.ok) throw result.error;
+      expect(result.value.source).toBe(fixture.artifact.source);
+      expect(result.value.sourceFile.path).toBe(
+        join(fixture.root, "files", "..\\sibling.js"),
+      );
+    } finally {
+      await artifacts.close();
+    }
+  },
+);

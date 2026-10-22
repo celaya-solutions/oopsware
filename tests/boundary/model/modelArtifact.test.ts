@@ -1,0 +1,722 @@
+import { createHash } from "node:crypto";
+import { open, writeFile, symlink, truncate } from "node:fs/promises";
+import { join } from "node:path";
+import { expect, it, onTestFinished } from "vitest";
+import { ModelArtifactProvider } from "../../../src/model/ModelArtifactProvider.js";
+import { ModelHeaderReader } from "../../../src/model/ModelHeaderReader.js";
+import { readSafetensorsHeader } from "../../../src/model/SafetensorsHeader.js";
+import { GgufHeader } from "../../../src/model/GgufHeader.js";
+import { createModelArtifactService } from "../../../src/composition/model.js";
+import { modelArtifactSchema } from "../../../src/domain/model/modelArtifact.js";
+import { createTestTempDirectory } from "../../fixtures/temporaryDirectory.js";
+import { ggufFixture, safetensorsFixture } from "../../fixtures/model/model.js";
+
+const hash = (bytes: Buffer) =>
+  createHash("sha256").update(bytes).digest("hex");
+const providerAt = async (bytes: Buffer) => {
+  const root = await createTestTempDirectory("rea-model-reader-");
+  const path = join(root, "content.without-format-extension");
+  await writeFile(path, bytes);
+  const provider = new ModelArtifactProvider();
+  onTestFinished(() => provider.close());
+  return { provider, path, root };
+};
+
+it.each([false, true])(
+  "reads exact GGUF declarations, endian=%s, without hashing tensor payload",
+  async (bigEndian) => {
+    const fixture = ggufFixture({ bigEndian });
+    const { provider, path } = await providerAt(fixture.bytes);
+    const result = await provider.inspect({ path, hash: "header" });
+    if (!result.ok) throw result.error;
+    expect(result.value.artifact).toEqual({
+      path,
+      file_size: fixture.bytes.length,
+      header_sha256: hash(fixture.header),
+      header_length: fixture.header.length,
+      sha256: null,
+      bytes_read: fixture.header.length,
+      read_scope: "header",
+    });
+    expect(result.value.byte_order).toBe(bigEndian ? "big" : "little");
+    expect(
+      result.value.metadata.find((row) => row.key === "custom.exact")?.value,
+    ).toBe("18446744073709551615");
+    expect(
+      result.value.metadata.find((row) => row.key === "tokenizer.ggml.tokens"),
+    ).toMatchObject({
+      element_type: "STRING",
+      element_count: 10,
+      preview_complete: false,
+      value: Array.from({ length: 8 }, (_, n) => `token-${String(n)}`),
+    });
+    expect(
+      result.value.tensors.map(({ name, shape, byte_length, file_offset }) => ({
+        name,
+        shape,
+        byte_length,
+        file_offset,
+      })),
+    ).toEqual([
+      {
+        name: "weight",
+        shape: ["2", "2"],
+        byte_length: 16,
+        file_offset: fixture.dataOffset,
+      },
+      {
+        name: "quant",
+        shape: ["32"],
+        byte_length: 18,
+        file_offset: fixture.dataOffset + 32,
+      },
+    ]);
+    expect(result.value.totals).toMatchObject({
+      parameter_count: "36",
+      tensor_bytes: 34,
+    });
+    const full = await provider.inspect({ path, hash: "full" });
+    if (!full.ok) throw full.error;
+    expect(full.value.artifact.sha256).toBe(hash(fixture.bytes));
+    expect(full.value.artifact.header_sha256).toBe(
+      result.value.artifact.header_sha256,
+    );
+  },
+);
+
+it.each([false, true])(
+  "preserves GGUF empty extents, quantized empty rows and scalars, endian=%s",
+  async (bigEndian) => {
+    const declarations = [
+      { name: "empty_first", type: 0, shape: [0n, 7n], offset: 0n, bytes: 0 },
+      { name: "empty_later", type: 0, shape: [3n, 0n], offset: 0n, bytes: 0 },
+      {
+        name: "empty_quant_first",
+        type: 2,
+        shape: [0n, 32n],
+        offset: 0n,
+        bytes: 0,
+      },
+      {
+        name: "empty_quant_later",
+        type: 2,
+        shape: [32n, 0n],
+        offset: 0n,
+        bytes: 0,
+      },
+      { name: "scalar", type: 0, shape: [], offset: 0n, bytes: 4 },
+    ];
+    const fixture = ggufFixture({ bigEndian, tensors: declarations });
+    const { provider, path } = await providerAt(fixture.bytes);
+    const result = await provider.inspect({ path, hash: "header" });
+    if (!result.ok) throw result.error;
+    expect(
+      result.value.tensors.map(
+        ({ name, shape, byte_length, parameter_count }) => ({
+          name,
+          shape,
+          byte_length,
+          parameter_count,
+        }),
+      ),
+    ).toEqual(
+      declarations.map(({ name, shape, bytes }) => ({
+        name,
+        shape: shape.map(String),
+        byte_length: bytes,
+        parameter_count: name === "scalar" ? "1" : "0",
+      })),
+    );
+    expect(result.value.totals).toMatchObject({
+      parameter_count: "1",
+      tensor_bytes: 4,
+    });
+    expect(result.value.artifact.bytes_read).toBe(fixture.header.length);
+  },
+);
+
+it.each([
+  { name: "excess rank", type: 0, shape: [1n, 1n, 1n, 1n, 1n], bytes: 4 },
+  { name: "quantized scalar", type: 2, shape: [], bytes: 0 },
+])(
+  "rejects GGUF $name without relaxing representation constraints",
+  async (tensor) => {
+    const fixture = ggufFixture({ tensors: [{ ...tensor, offset: 0n }] });
+    const { provider, path } = await providerAt(fixture.bytes);
+    const result = await provider.inspect({ path, hash: "header" });
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("Expected format refusal");
+    expect(result.error).toMatchObject({
+      constraint: "file_format_rejected",
+    });
+  },
+);
+
+it.each([8, 24, 40])(
+  "accepts format-valid GGUF alignment %s and preserves exact offsets",
+  async (alignment) => {
+    const fixture = ggufFixture({ alignment });
+    const { path, provider } = await providerAt(fixture.bytes);
+    const result = await provider.inspect({ path, hash: "header" });
+    if (!result.ok) throw result.error;
+    expect(result.value.alignment).toBe(alignment);
+    expect(result.value.tensor_data_offset).toBe(fixture.dataOffset);
+    expect(
+      result.value.tensors.every((row) => row.file_offset % alignment === 0),
+    ).toBe(true);
+    expect(result.value.tensors[1]?.file_offset).toBe(
+      fixture.dataOffset + Math.ceil(16 / alignment) * alignment,
+    );
+  },
+);
+
+it.each([0, 1, 2, 4, 12])(
+  "rejects GGUF alignment %s outside positive multiples of eight",
+  async (alignment) => {
+    const base = ggufFixture();
+    const fixture = ggufFixture({
+      metadata: [
+        { key: "general.alignment", type: 4, value: base.u32(alignment) },
+      ],
+    });
+    const { path, provider } = await providerAt(fixture.bytes);
+    const result = await provider.inspect({ path, hash: "header" });
+    if (result.ok) throw new Error("Invalid alignment accepted");
+    expect(result.error).toMatchObject({
+      _tag: "BinaryTargetError",
+      constraint: "file_format_rejected",
+    });
+  },
+);
+
+it.each([
+  "General.name",
+  "general.naïve",
+  "general..name",
+  "general/name",
+  "general.-name",
+  "general.name_",
+  "general.__name",
+])(
+  "rejects invalid GGUF metadata key %s before publishing facts",
+  async (key) => {
+    const fixture = ggufFixture({
+      metadata: [{ key, type: 7, value: Buffer.from([1]) }],
+    });
+    const { path, provider } = await providerAt(fixture.bytes);
+    const result = await provider.inspect({ path, hash: "header" });
+    if (result.ok) throw new Error("Invalid metadata key accepted");
+    expect(result.error).toMatchObject({
+      _tag: "BinaryTargetError",
+      constraint: "file_format_rejected",
+    });
+  },
+);
+
+it("accepts standardized GGUF metadata keys containing numeric hierarchy components", async () => {
+  const base = ggufFixture();
+  const fixture = ggufFixture({
+    metadata: [
+      { key: "general.base_model.0.name", type: 8, value: base.text("parent") },
+    ],
+  });
+  const { path, provider } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.metadata[0]).toMatchObject({
+    key: "general.base_model.0.name",
+    value: "parent",
+  });
+});
+
+it.each([99_999_993, 100_000_000])(
+  "admits safetensors declared header length %s before its independent representation limit",
+  async (length) => {
+    const bytes = Buffer.alloc(9);
+    bytes.writeBigUInt64LE(BigInt(length));
+    bytes[8] = 0x7b;
+    const { path, provider } = await providerAt(bytes);
+    const file = await open(path, "r+");
+    try {
+      await file.truncate(8 + length);
+    } finally {
+      await file.close();
+    }
+    const result = await provider.inspect({ path, hash: "header" });
+    if (result.ok) throw new Error("Representation limit was bypassed");
+    expect(result.error).toMatchObject({
+      _tag: "AnalysisResourceConstraintError",
+      reason: expect.stringContaining("32 MiB"),
+    });
+  },
+);
+
+it("retains the absolute header budget for GGUF without allocating that extent", async () => {
+  const { path } = await providerAt(Buffer.alloc(0));
+  const file = await open(path, "r+");
+  onTestFinished(() => file.close());
+  await file.truncate(100_000_009);
+  const reader = new ModelHeaderReader(file, 100_000_009);
+  expect(() => reader.guarantee(100_000_000)).not.toThrow();
+  expect(() => reader.guarantee(100_000_001)).toThrow("100,000,000 bytes");
+});
+
+it("preserves safetensors scalar, empty and packed tensor declarations and raw string metadata", async () => {
+  const fixture = safetensorsFixture();
+  const { provider, path } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.artifact.header_sha256).toBe(hash(fixture.header));
+  expect(
+    result.value.tensors.map((row) => [row.name, row.shape, row.byte_length]),
+  ).toEqual([
+    ["empty", ["0", "7"], 0],
+    ["weight", ["2", "2"], 16],
+  ]);
+  expect(result.value.metadata.map((row) => [row.key, row.value])).toEqual([
+    ["format", "pt"],
+    ["license", "Apache-2.0"],
+  ]);
+  const packed = safetensorsFixture(
+    JSON.stringify({
+      scalar: { dtype: "F4", shape: [2], data_offsets: [0, 1] },
+      empty: { dtype: "F32", shape: [0], data_offsets: [0, 0] },
+    }),
+    Buffer.alloc(1),
+  );
+  await writeFile(path, packed.bytes);
+  const checked = await provider.inspect({ path, hash: "full" });
+  if (!checked.ok) throw checked.error;
+  expect(checked.value.totals).toMatchObject({
+    parameter_count: "2",
+    tensor_bytes: 1,
+  });
+});
+
+it("returns unknown lengths for unknown GGUF types without inventing storage size", async () => {
+  const fixture = ggufFixture({
+    tensors: [{ name: "future", type: 999, shape: [1n], offset: 0n, bytes: 1 }],
+  });
+  const { provider, path } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.tensors[0]).toMatchObject({
+    type_id: 999,
+    type: "UNKNOWN_999",
+    byte_length: null,
+    byte_length_state: "unknown",
+  });
+  expect(result.value.coverage.tensor_ranges).toBe("partial");
+  expect(result.value.totals.tensor_bytes).toBeNull();
+});
+
+it("keeps unknown safetensors storage validation separate from observed valid byte ranges", async () => {
+  const fixture = safetensorsFixture(
+    '{"future":{"dtype":"FUTURE4","shape":[2],"data_offsets":[0,4]}}',
+    Buffer.alloc(4),
+  );
+  const { path, provider } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.tensors[0]).toMatchObject({
+    byte_length: 4,
+    byte_length_state: "declared",
+    storage_validation: "unknown",
+  });
+  expect(result.value.coverage).toMatchObject({
+    tensor_ranges: "complete",
+    storage_sizes: "partial",
+  });
+});
+
+it("preserves nonfinite floating metadata and negative zero without JSON coercion", async () => {
+  const values = [NaN, Infinity, -Infinity, -0];
+  const fixture = ggufFixture({
+    metadata: values.map((value, index) => {
+      const b = Buffer.alloc(8);
+      b.writeDoubleLE(value);
+      return { key: `custom.float_${String(index)}`, type: 12, value: b };
+    }),
+  });
+  const { path, provider } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.metadata.map((row) => [row.type, row.value])).toEqual(
+    ["NaN", "+Infinity", "-Infinity", "-0"].map((value) => ["FLOAT64", value]),
+  );
+});
+
+it("validates booleans beyond an array preview without allocating the full value list", async () => {
+  const base = ggufFixture();
+  const values = Buffer.alloc(10000);
+  values[9999] = 2;
+  const fixture = ggufFixture({
+    metadata: [
+      {
+        key: "custom.flags",
+        type: 9,
+        value: Buffer.concat([base.u32(7), base.u64(10000n), values]),
+      },
+    ],
+  });
+  const { path, provider } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (result.ok) throw new Error("Invalid omitted boolean was accepted");
+  expect(result.error).toMatchObject({
+    _tag: "BinaryTargetError",
+    constraint: "file_format_rejected",
+  });
+});
+
+it("refuses an oversized declared header before reading or expanding it", async () => {
+  const bytes = Buffer.alloc(9);
+  bytes.writeBigUInt64LE(100_000_001n);
+  bytes[8] = 0x7b;
+  const { path, provider } = await providerAt(bytes);
+  const file = await open(path, "r+");
+  try {
+    await file.truncate(100_000_009);
+  } finally {
+    await file.close();
+  }
+  const result = await provider.inspect({ path, hash: "header" });
+  if (result.ok) throw new Error("Oversized header was accepted");
+  expect(result.error).toMatchObject({
+    _tag: "AnalysisResourceConstraintError",
+    retryable: false,
+    reportedLimits: { maximum_header_bytes: 100_000_000 },
+  });
+});
+
+const malformed = [
+  ["truncated GGUF", () => ggufFixture().bytes.subarray(0, 21)],
+  [
+    "invalid UTF8",
+    () => {
+      const f = ggufFixture({
+        metadata: [
+          {
+            key: "x",
+            type: 8,
+            value: Buffer.concat([
+              Buffer.from([1, 0, 0, 0, 0, 0, 0, 0]),
+              Buffer.from([0xff]),
+            ]),
+          },
+        ],
+      });
+      return f.bytes;
+    },
+  ],
+  [
+    "duplicate GGUF metadata",
+    () =>
+      ggufFixture({
+        metadata: [
+          { key: "x", type: 7, value: Buffer.from([0]) },
+          { key: "x", type: 7, value: Buffer.from([1]) },
+        ],
+      }).bytes,
+  ],
+  [
+    "invalid boolean",
+    () =>
+      ggufFixture({
+        metadata: [{ key: "x", type: 7, value: Buffer.from([2]) }],
+      }).bytes,
+  ],
+  [
+    "misaligned GGUF tensor",
+    () =>
+      ggufFixture({
+        tensors: [{ name: "x", type: 0, shape: [1n], offset: 1n, bytes: 4 }],
+      }).bytes,
+  ],
+  [
+    "invalid quantization row",
+    () =>
+      ggufFixture({
+        tensors: [
+          { name: "x", type: 2, shape: [16n, 2n], offset: 0n, bytes: 18 },
+        ],
+      }).bytes,
+  ],
+  [
+    "overlapping GGUF tensors",
+    () =>
+      ggufFixture({
+        tensors: [
+          { name: "a", type: 0, shape: [1n], offset: 0n, bytes: 4 },
+          { name: "b", type: 0, shape: [1n], offset: 0n, bytes: 4 },
+        ],
+      }).bytes,
+  ],
+  [
+    "duplicate JSON keys",
+    () =>
+      safetensorsFixture(
+        '{"x":{"dtype":"F32","dtype":"F16","shape":[2],"data_offsets":[0,4]}}',
+        Buffer.alloc(4),
+      ).bytes,
+  ],
+  [
+    "safetensors shape mismatch",
+    () =>
+      safetensorsFixture(
+        '{"x":{"dtype":"F32","shape":[3],"data_offsets":[0,16]}}',
+      ).bytes,
+  ],
+  [
+    "safetensors gap",
+    () =>
+      safetensorsFixture(
+        '{"x":{"dtype":"F32","shape":[3],"data_offsets":[4,16]}}',
+      ).bytes,
+  ],
+  [
+    "safetensors overlap",
+    () =>
+      safetensorsFixture(
+        '{"a":{"dtype":"F32","shape":[4],"data_offsets":[0,16]},"b":{"dtype":"F32","shape":[1],"data_offsets":[0,4]}}',
+      ).bytes,
+  ],
+  ["safetensors trailing data", () => safetensorsFixture("{}").bytes],
+  [
+    "safetensors non-string metadata",
+    () => safetensorsFixture('{"__metadata__":{"x":1}}', Buffer.alloc(0)).bytes,
+  ],
+  [
+    "safetensors unpaired surrogate",
+    () =>
+      safetensorsFixture('{"__metadata__":{"x":"\\ud800"}}', Buffer.alloc(0))
+        .bytes,
+  ],
+] as const;
+it.each(malformed)(
+  "rejects %s with typed file_format_rejected",
+  async (_name, make) => {
+    const { provider, path } = await providerAt(make());
+    const result = await provider.inspect({ path, hash: "header" });
+    if (result.ok) throw new Error("Malformed model was accepted");
+    expect(result.error).toMatchObject({
+      _tag: "BinaryTargetError",
+      constraint: "file_format_rejected",
+    });
+  },
+);
+
+it("bounds expansion before allocation and distinguishes unsupported pickle, version and paths", async () => {
+  const fixture = ggufFixture();
+  fixture.bytes.writeBigUInt64LE(0xffffffffffffffffn, 8);
+  const { provider, path, root } = await providerAt(fixture.bytes);
+  const huge = await provider.inspect({ path, hash: "header" });
+  if (huge.ok) throw new Error("Huge count admitted");
+  expect(huge.error._tag).toBe("AnalysisResourceConstraintError");
+  await writeFile(path, Buffer.from([0x80, 4, 0, 0]));
+  const pickle = await provider.inspect({ path, hash: "header" });
+  if (pickle.ok) throw new Error("Pickle admitted");
+  expect(pickle.error._tag).toBe("AnalysisUnsupportedTargetError");
+  await writeFile(path, ggufFixture({ version: 999 }).bytes);
+  const version = await provider.inspect({ path, hash: "header" });
+  if (version.ok) throw new Error("Unknown version admitted");
+  expect(version.error._tag).toBe("AnalysisUnsupportedTargetError");
+  const alias = join(root, "link");
+  await symlink(path, alias);
+  const linked = await provider.inspect({ path: alias, hash: "header" });
+  expect(linked.ok).toBe(false);
+  const service = createModelArtifactService();
+  onTestFinished(() => service.close());
+  const invalid = await service.inspect({
+    path: "relative",
+    detail: "complete",
+  });
+  if (invalid.ok) throw new Error("Relative path admitted");
+  expect(invalid.error._tag).toBe("AnalysisInputError");
+});
+
+it("reads only the exact header, even when it ends in the middle of a normal buffer", async () => {
+  const fixture = safetensorsFixture();
+  const { path } = await providerAt(fixture.bytes);
+  const file = await open(path, "r");
+  onTestFinished(() => file.close());
+  const requests: [number, number][] = [];
+  const read = file.read.bind(file);
+  const boundary = {
+    read: async (
+      buffer: Buffer,
+      offset: number,
+      length: number,
+      position: number,
+    ) => {
+      requests.push([position, length]);
+      expect(position + length).toBeLessThanOrEqual(fixture.header.length);
+      return read(buffer, offset, length, position);
+    },
+  } as Pick<typeof file, "read">;
+  const reader = new ModelHeaderReader(
+    boundary as typeof file,
+    fixture.bytes.length,
+  );
+  await readSafetensorsHeader(reader, await reader.take(4));
+  expect(await reader.finish(false)).toMatchObject({
+    bytes_read: fixture.header.length,
+    header_sha256: hash(fixture.header),
+  });
+  expect(requests.reduce((n, [, length]) => n + length, 0)).toBe(
+    fixture.header.length,
+  );
+});
+
+it.each(["header", "full"] as const)(
+  "classifies real truncation after admission during %s reading as an identity change",
+  async (mode) => {
+    const fixture = ggufFixture();
+    const { path } = await providerAt(fixture.bytes);
+    const file = await open(path, "r");
+    onTestFinished(() => file.close());
+    const admitted = await file.stat();
+    const reader = new ModelHeaderReader(file, admitted.size);
+    if (mode === "full") await reader.take(fixture.header.length);
+    await truncate(path, mode === "header" ? 0 : fixture.header.length);
+    const reading = mode === "header" ? reader.take(4) : reader.finish(true);
+    await expect(reading).rejects.toMatchObject({ reason: "integrity" });
+  },
+);
+
+it("keeps GGUF read-ahead inside the directory and hashes precisely that prefix", async () => {
+  const fixture = ggufFixture();
+  const { path } = await providerAt(fixture.bytes);
+  const file = await open(path, "r");
+  onTestFinished(() => file.close());
+  const read = file.read.bind(file);
+  let bytesRead = 0;
+  const boundary = {
+    read: async (
+      buffer: Buffer,
+      offset: number,
+      length: number,
+      position: number,
+    ) => {
+      expect(position + length).toBeLessThanOrEqual(fixture.header.length);
+      const result = await read(buffer, offset, length, position);
+      bytesRead += result.bytesRead;
+      return result;
+    },
+  } as Pick<typeof file, "read">;
+  const reader = new ModelHeaderReader(
+    boundary as typeof file,
+    fixture.bytes.length,
+  );
+  await reader.take(4);
+  await new GgufHeader(reader).read();
+  await reader.finish(false);
+  expect(bytesRead).toBe(fixture.header.length);
+});
+
+it("inspects a 1 GiB sparse safetensors declaration using only its small header", async () => {
+  const dataBytes = 1024 ** 3;
+  const fixture = safetensorsFixture(
+    JSON.stringify({
+      weight: { dtype: "U8", shape: [dataBytes], data_offsets: [0, dataBytes] },
+    }),
+    Buffer.alloc(0),
+  );
+  const { path, provider } = await providerAt(fixture.header);
+  const file = await open(path, "r+");
+  try {
+    await file.truncate(fixture.header.length + dataBytes);
+  } finally {
+    await file.close();
+  }
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.artifact.bytes_read).toBe(fixture.header.length);
+  expect(result.value.tensors[0]).toMatchObject({
+    byte_length: dataBytes,
+    parameter_count: String(dataBytes),
+  });
+});
+
+it("supports true scalar shapes and prototype-named metadata without changing their spelling", async () => {
+  const fixture = safetensorsFixture(
+    '{"__metadata__":{"__proto__":"raw","constructor":"kept"},"scalar":{"dtype":"F32","shape":[],"data_offsets":[0,4]}}',
+    Buffer.alloc(4),
+  );
+  const { path, provider } = await providerAt(fixture.bytes);
+  const result = await provider.inspect({ path, hash: "header" });
+  if (!result.ok) throw result.error;
+  expect(result.value.tensors[0]).toMatchObject({
+    shape: [],
+    parameter_count: "1",
+    byte_length: 4,
+  });
+  expect(result.value.metadata.map(({ key, value }) => [key, value])).toEqual([
+    ["__proto__", "raw"],
+    ["constructor", "kept"],
+  ]);
+});
+
+it("yields while validating a large metadata array, preserves cancellation and releases admission", async () => {
+  const f = ggufFixture();
+  const count = 1_000_000;
+  const fixture = ggufFixture({
+    metadata: [
+      {
+        key: "custom.bools",
+        type: 9,
+        value: Buffer.concat([
+          f.u32(7),
+          f.u64(BigInt(count)),
+          Buffer.alloc(count),
+        ]),
+      },
+    ],
+  });
+  const { path, provider } = await providerAt(fixture.bytes);
+  const controller = new AbortController();
+  const reason = new Error("stop large array");
+  const pending = provider.inspect(
+    { path, hash: "header" },
+    { signal: controller.signal },
+  );
+  setTimeout(() => controller.abort(reason), 0);
+  const result = await pending;
+  if (result.ok) throw new Error("Cancellation ignored");
+  expect(result.error).toMatchObject({
+    _tag: "AnalysisCancelledError",
+    cause: reason,
+  });
+  await writeFile(path, ggufFixture().bytes);
+  const recovered = await provider.inspect({ path, hash: "header" });
+  if (!recovered.ok) throw recovered.error;
+  expect(recovered.value.tensors).toHaveLength(2);
+});
+
+it("retains explicit scoped identity through shared service and preserves caller abort reasons", async () => {
+  const fixture = ggufFixture();
+  const { path } = await providerAt(fixture.bytes);
+  const service = createModelArtifactService();
+  onTestFinished(() => service.close());
+  const result = await service.inspect({ path, detail: "complete" });
+  if (!result.ok) throw result.error;
+  expect(result.value.subject).toBeNull();
+  expect(
+    modelArtifactSchema.parse(result.value.normalized_result).artifact.sha256,
+  ).toBeNull();
+  const full = await service.inspect({
+    path,
+    hash: "full",
+    detail: "complete",
+  });
+  if (!full.ok) throw full.error;
+  expect(full.value.subject?.digest.sha256).toBe(hash(fixture.bytes));
+  const controller = new AbortController();
+  const reason = new Error("selected caller stop");
+  controller.abort(reason);
+  const stopped = await service.inspect(
+    { path, detail: "complete" },
+    { signal: controller.signal },
+  );
+  if (stopped.ok) throw new Error("Cancellation ignored");
+  expect(stopped.error.cause).toBe(reason);
+});

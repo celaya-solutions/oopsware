@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="What the Oopsware public library stores, for how long, and the privacy-respecting analytics it uses."
+    />
+    <title>Privacy · Oopsware</title>
+    <link rel="stylesheet" href="/site.css" />
+    <script src="/config.js"></script>
+    <script type="module" src="/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/" class="brand" aria-label="Oopsware home"
+          ><span class="brand-mark" aria-hidden="true">::</span>oopsware</a
+        >
+        <button
+          class="icon-button nav-toggle"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          ≡
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <a href="/">Library</a>
+          <a href="/formats">File types</a>
+          <a href="/about">About</a>
+          <a href="/report">Report a file</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page" id="main">
+      <div class="wrap">
+        <div class="page-head">
+          <p class="updated">Privacy · updated 2026-10-16</p>
+          <h1>What we keep, and what we don't</h1>
+          <p class="lede">
+            Plain language, no lawyer-speak. The library is built to hold as
+            little about you as it can.
+          </p>
+        </div>
+        <div class="prose">
+          <h2>No account, no sign-in</h2>
+          <p>
+            You can browse, upload, and download without making an account. We
+            don't ask for your name, email, or a password, and there is nothing
+            to log in to.
+          </p>
+
+          <h2>What an upload stores</h2>
+          <p>
+            When you upload a file, the server keeps three things: the file
+            itself, any files found inside it when it is unpacked, and the
+            written findings from inspecting it. Uploads are public — anyone can
+            browse and download them. Uploaded programs are never run.
+          </p>
+
+          <h2>How long it stays</h2>
+          <p>On the upload form you choose what happens next:</p>
+          <ul>
+            <li>
+              <strong>Delete after 24 hours</strong> (the default): about a day
+              after you upload, the whole thing — the file, anything unpacked
+              from it, and its findings — is removed automatically and cannot be
+              recovered.
+            </li>
+            <li>
+              <strong>Keep</strong>: the upload stays until an operator removes
+              it. Once an upload is published you cannot delete it yourself; ask
+              through <a href="/report">Report a file</a>.
+            </li>
+          </ul>
+          <p>
+            An upload you start but never finish is deleted after about an hour
+            without new data.
+          </p>
+          <div class="callout">
+            <p>
+              Either way, there is a limit of 1 GiB per upload, and you confirm
+              the file is yours to share and holds no personal data or secrets
+              before it goes up.
+            </p>
+          </div>
+
+          <h2>Stopping abuse</h2>
+          <p>
+            To keep one visitor from filling the library or slowing it for
+            everyone, the server counts recent requests, uploads, and downloaded
+            bytes for each network address. Those counts live only in the
+            server's memory, reset within an hour, and are never written to disk
+            or shared. Separately, our hosting provider, Railway, keeps standard
+            request logs, such as the IP address and the page requested, to run
+            the service.
+          </p>
+
+          <h2>Analytics</h2>
+          <p>
+            We use <strong>PostHog</strong> to count page views and a few clicks
+            (like opening a file or starting an upload) so we can see what
+            people find useful. It is set up to respect you:
+          </p>
+          <ul>
+            <li>
+              It runs in <strong>cookieless</strong> mode — no cookies, and
+              nothing stored on your device between visits.
+            </li>
+            <li>
+              No session recording, no screen capture, no reading of what you
+              type.
+            </li>
+            <li>
+              No personal profiles. We never put file names, hashes, or file
+              contents into an analytics event.
+            </li>
+            <li>
+              Data is sent to PostHog's <strong>United States</strong> region.
+            </li>
+            <li>
+              If your browser sends "Do Not Track," analytics stays off. It is
+              also off entirely unless the operator has turned it on.
+            </li>
+          </ul>
+
+          <h2>No ad or social trackers</h2>
+          <p>
+            There are no advertising pixels, no social-media trackers, and no
+            third-party scripts loaded from other sites. A strict
+            content-security policy blocks them.
+          </p>
+
+          <h2>Contact</h2>
+          <p>
+            Questions, or want something removed? See
+            <a href="/report">Report a file</a> or email
+            <a href="mailto:hello@celayasolutions.com"
+              >hello@celayasolutions.com</a
+            >.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <a href="/" class="brand"
+          ><span class="brand-mark" aria-hidden="true">::</span>oopsware</a
+        >
+        <nav aria-label="Site">
+          <a href="/formats">File types</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/report">Report a file</a>
+          <a href="/about">About</a>
+        </nav>
+        <span class="footer-note">Stay curious. Leave it useful.</span>
+      </div>
+    </footer>
+  </body>
+</html>

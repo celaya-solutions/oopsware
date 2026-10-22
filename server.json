@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.celaya-solutions/oopsware",
+  "title": "Oopsware",
+  "description": "Find out what makes software tick. A local reverse-engineering workbench by CSR.",
+  "websiteUrl": "https://github.com/celaya-solutions/oopsware",
+  "repository": {
+    "url": "https://github.com/celaya-solutions/oopsware",
+    "source": "github"
+  },
+  "version": "6.7.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@celaya-solutions/oopsware",
+      "version": "6.7.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ]
+    }
+  ]
+}

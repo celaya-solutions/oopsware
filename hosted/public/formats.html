@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Every file type Oopsware reads — what you get in your browser, what the desktop tool adds, what needs a provider you bring, and what's coming next."
+    />
+    <title>File types · Oopsware</title>
+    <link rel="stylesheet" href="/site.css" />
+    <script src="/config.js"></script>
+    <script type="module" src="/site.js"></script>
+    <script type="module" src="/formats.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#tiers">Skip to the file types</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/" class="brand" aria-label="Oopsware home">
+          <span class="brand-mark" aria-hidden="true">::</span>oopsware
+        </a>
+        <button
+          class="icon-button nav-toggle"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          ≡
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <a href="/">Library</a>
+          <a href="/formats">File types</a>
+          <a href="/about">About</a>
+          <a href="/report">Report a file</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="wrap">
+        <div class="page-head">
+          <p class="updated">Reference · updated 2026-10-16</p>
+          <h1>Every file type, and what you get</h1>
+          <p class="lede">
+            Oopsware reads a lot of file types. How much it can tell you depends
+            on where you open the file. Here is the honest version: what happens
+            right here in your browser, what the free desktop tool adds, what
+            needs a separate tool you install yourself, and what is still on the
+            way.
+          </p>
+        </div>
+
+        <div class="formats-controls" role="search">
+          <label class="sr-only" for="formats-search">Search file types</label>
+          <input
+            id="formats-search"
+            class="formats-search"
+            type="search"
+            placeholder="Search a type or extension, e.g. apk, pdf, wasm"
+          />
+          <div
+            class="tier-filter"
+            role="group"
+            aria-label="Filter by where it works"
+          >
+            <button data-tier-filter="all" aria-pressed="true">All</button>
+            <button data-tier-filter="browser" aria-pressed="false">
+              In your browser
+            </button>
+            <button data-tier-filter="local" aria-pressed="false">
+              Desktop tool
+            </button>
+            <button data-tier-filter="provider" aria-pressed="false">
+              With a provider
+            </button>
+            <button data-tier-filter="coming" aria-pressed="false">
+              Coming
+            </button>
+          </div>
+        </div>
+
+        <p id="formats-empty" class="formats-empty" hidden>
+          Nothing matches that. Clear the search or pick a different filter.
+        </p>
+
+        <div id="tiers">
+          <section class="tier">
+            <h2>Here, in your browser</h2>
+            <p>
+              When you upload to the library, inspection runs on a plain Linux
+              server with nothing extra installed, and your file is never run.
+              Here is what that gives you.
+            </p>
+            <div class="fmt-grid">
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="zip ipa apk appx msix jar aab archive package app bundle"
+              >
+                <div class="fmt-top">
+                  <h3>Zip packages &amp; app bundles</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">
+                  .zip · .ipa · .apk · .appx · .msix · .jar · .aab
+                </p>
+                <p>
+                  Every file inside is listed, hashed, and identified by its
+                  bytes, then unpacked so you can browse and download each one.
+                </p>
+                <p class="need">
+                  Built in. Nested archives aren't opened again; encrypted
+                  entries are named, not unpacked.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="asar electron archive app"
+              >
+                <div class="fmt-top">
+                  <h3>Electron archives</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.asar</p>
+                <p>
+                  Unpacks the files that make up an Electron desktop app so you
+                  can read and download them.
+                </p>
+                <p class="need">Built in.</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="archives tar gz gzip tgz compression extract"
+              >
+                <div class="fmt-top">
+                  <h3>Tar archives &amp; gzip</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.tar · .tar.gz · .tgz · .gz</p>
+                <p>
+                  Recognized by their bytes, then every file inside is listed,
+                  hashed, and unpacked. A .gz that holds one file shows that
+                  file.
+                </p>
+                <p class="need">
+                  Built in. Links are listed, not created. Archives with
+                  duplicate names, sparse files, or devices are not unpacked,
+                  and the reason is shown.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="markdown md readme text document"
+              >
+                <div class="fmt-top">
+                  <h3>Markdown &amp; text</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.md · .markdown · .txt</p>
+                <p>
+                  Markdown is shown formatted, a whole block at a time, with raw
+                  HTML and scripts kept as plain text, unsafe links left
+                  unclickable, and remote images never loaded. Text keeps its
+                  exact lines and newlines and names any bytes that could not be
+                  decoded. A structure view and the raw bytes are one tab away.
+                </p>
+                <p class="need">
+                  Built in. Text originals up to 16 MiB, Markdown up to 4 MiB.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="data config structured json jsonl yaml yml toml xml csv tsv spreadsheet table"
+              >
+                <div class="fmt-top">
+                  <h3>Data &amp; config files</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">
+                  .json · .jsonl · .yaml · .yml · .toml · .xml · .csv · .tsv
+                </p>
+                <p>
+                  Parsed into a structure view where each value shows its path
+                  and its line and column in the file. Problems are listed with
+                  their exact place: a bad JSON Lines record or CSV row is named
+                  while the good ones stay readable, duplicate keys are flagged,
+                  and big numbers keep every digit. YAML aliases are never
+                  expanded, XML entities and DTDs are never loaded, and CSV
+                  formulas are shown only as text. TOML values are listed
+                  without line numbers.
+                </p>
+                <p class="need">
+                  Built in. JSON, JSON Lines, CSV and TSV originals up to 16
+                  MiB; YAML, TOML and XML up to 4 MiB; the first 100,000 parts
+                  are browsable. A file too complex to read within the
+                  service&rsquo;s memory budget, and files inside archives, keep
+                  the text view.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="webassembly wasm wat functions imports exports memory calls"
+              >
+                <div class="fmt-top">
+                  <h3>WebAssembly</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.wasm</p>
+                <p>
+                  Decoded without ever running it: imports, exports, memory and
+                  data, every section with its byte range, and each function
+                  with its signature, the functions it calls and its indirect
+                  calls. A text rendering (.wat) is a separate, clearly labelled
+                  download. Names come only from the module itself. SIMD,
+                  exception handling, GC and other newer proposals are named,
+                  not decoded; components are recognized only.
+                </p>
+                <p class="need">
+                  Built in. Modules up to 32 MiB; the first 20,000 functions are
+                  browsable. The desktop tool also reads .wat files and shows
+                  each function&rsquo;s instructions and likely indirect-call
+                  targets.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="any file elf pe exe dll pdf image png jpg binary identify preview hex strings"
+              >
+                <div class="fmt-top">
+                  <h3>Any other file</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">
+                  everything else — programs, documents, images, data…
+                </p>
+                <p>
+                  Identified by its bytes, with size and SHA-256, plus a paged
+                  text, hex, and printable-strings view. The original is always
+                  downloadable.
+                </p>
+                <p class="need">
+                  Built in. Taking a program apart (below) needs the desktop
+                  tool or a provider.
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section class="tier">
+            <h2>With the desktop tool (free, nothing extra)</h2>
+            <p>
+              Oopsware also runs on your own computer as a command and an agent
+              tool. These work with nothing installed beyond Oopsware itself.
+            </p>
+            <div class="fmt-grid">
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="javascript electron app bundle node modules imports preload ipc js ts jsx"
+              >
+                <div class="fmt-top">
+                  <h3>JavaScript &amp; Electron apps</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">
+                  a folder or .asar of .js .jsx .ts .tsx, HTML, package.json
+                </p>
+                <p>
+                  Maps the modules, imports, entry points, preload and IPC
+                  bridges, and network endpoints an app uses.
+                </p>
+                <p class="need">
+                  Built in. Works on a folder or an .asar, not a single loose
+                  file.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="source map js original file line names"
+              >
+                <div class="fmt-top">
+                  <h3>Source maps</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">.map (with its built script)</p>
+                <p>
+                  Ties minified code back to the original file names and line
+                  numbers.
+                </p>
+                <p class="need">Built in.</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="apple mac iphone app mach-o dylib bundle objc swift framework"
+              >
+                <div class="fmt-top">
+                  <h3>Mac &amp; iPhone app structure</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">.app, .ipa, Mach-O programs and .dylib</p>
+                <p>
+                  Bundle anatomy — helpers, frameworks, entitlements — plus load
+                  commands, signatures, and Objective-C / Swift metadata.
+                </p>
+                <p class="need">
+                  Built in. Some detail (slices, asset catalogs) needs a Mac.
+                  Disassembly needs a provider below.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="archives xz txz 7z 7-zip compression extract"
+              >
+                <div class="fmt-top">
+                  <h3>XZ &amp; 7-Zip archives</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">.xz · .tar.xz · .txz · .7z</p>
+                <p>
+                  Lists, hashes, and unpacks the files inside. Encrypted 7-Zip
+                  headers are reported; no password is ever tried.
+                </p>
+                <p class="need">
+                  Needs the xz program or libarchive's bsdtar installed. The web
+                  library recognizes these files but does not unpack them yet.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="apple resources nib storyboard keyed archive plist assets car interface builder"
+              >
+                <div class="fmt-top">
+                  <h3>Apple UI resources</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">
+                  .nib · .storyboardc · keyed-archive plists · .plist ·
+                  Assets.car
+                </p>
+                <p>
+                  Reads the interface objects, their outlets and actions,
+                  archived object graphs, and asset metadata.
+                </p>
+                <p class="need">
+                  Built in. Asset catalogs and some plists need a Mac.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="dotnet .net assembly cil il pinvoke managed exe dll"
+              >
+                <div class="fmt-top">
+                  <h3>.NET assemblies</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">managed .exe and .dll (up to 128 MiB)</p>
+                <p>
+                  Types, method signatures, CIL instructions, the native
+                  P/Invoke boundary, and differences between two builds.
+                </p>
+                <p class="need">
+                  Built in. Decompiled C# is optional with ILSpy. No single-file
+                  or IL2CPP bundles.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="evm ethereum bytecode contract selector solidity"
+              >
+                <div class="fmt-top">
+                  <h3>EVM bytecode</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">raw or hex contract bytecode (up to 4 MiB)</p>
+                <p>
+                  Recovers the likely function selectors, their arguments, and
+                  whether each changes state.
+                </p>
+                <p class="need">
+                  Built in. Newer EOF containers aren't supported yet.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="local"
+                data-text="har network capture requests responses web"
+              >
+                <div class="fmt-top">
+                  <h3>Network captures (HAR)</h3>
+                  <span class="badge local">Desktop tool</span>
+                </div>
+                <p class="exts">.har</p>
+                <p>
+                  Reads the recorded requests and responses from a saved browser
+                  session.
+                </p>
+                <p class="need">Built in.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="tier">
+            <h2>With a provider you bring</h2>
+            <p>
+              Taking a compiled program all the way down to readable code needs
+              a specialist tool you install yourself. Oopsware drives it and
+              brings the results into one place; it never installs these for
+              you.
+            </p>
+            <div class="fmt-grid">
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="native binary elf pe mach-o exe dll so dylib disassembly decompile ghidra hopper ida dos"
+              >
+                <div class="fmt-top">
+                  <h3>Native binaries, deeply</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">
+                  ELF, PE (.exe/.dll), Mach-O, 16-bit DOS programs
+                </p>
+                <p>
+                  Disassembly and decompiled, readable pseudo-code for the
+                  functions inside a compiled program.
+                </p>
+                <p class="need">
+                  Bring Hopper, Ghidra, or IDA. Some targets are limited to one
+                  of them, and a few steps need a matching operating system.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="android apk resources manifest smali jadx apktool jeb classes methods"
+              >
+                <div class="fmt-top">
+                  <h3>Android apps, deeply</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">.apk</p>
+                <p>
+                  The manifest, classes, decompiled Java, and decoded resources
+                  and strings.
+                </p>
+                <p class="need">
+                  Bring jadx, apktool, or JEB. Split APKs and app bundles aren't
+                  covered yet.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="android device adb phone logcat packages pull push"
+              >
+                <div class="fmt-top">
+                  <h3>A connected Android device</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">USB, emulator, or network devices</p>
+                <p>
+                  Device, package, and display facts, logcat, and pulling or
+                  pushing files and apps.
+                </p>
+                <p class="need">Bring adb (the Android platform tools).</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="firmware image binwalk unblob filesystem blobs embedded"
+              >
+                <div class="fmt-top">
+                  <h3>Firmware images</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">raw firmware images</p>
+                <p>
+                  Finds the regions inside and carves out embedded filesystems
+                  and blobs.
+                </p>
+                <p class="need">Bring binwalk or unblob. Verified on Linux.</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="web page live url browser dom scripts network screenshot"
+              >
+                <div class="fmt-top">
+                  <h3>Live web pages</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">open tabs and URLs</p>
+                <p>
+                  The page's structure, scripts, network, storage, and
+                  screenshots, including scripted walkthroughs.
+                </p>
+                <p class="need">Use your own Chrome-family browser.</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="running program process inspector lldb node electron terminal capture"
+              >
+                <div class="fmt-top">
+                  <h3>Running programs</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">
+                  Node/Electron inspectors, terminal commands, Mac app windows
+                </p>
+                <p>
+                  Watches a program while it runs: scripts it loads, pages it
+                  shows, and call traces.
+                </p>
+                <p class="need">
+                  Built in on Linux/macOS; the Mac window and call-trace parts
+                  need a Mac.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="obfuscated bundle wakaru deobfuscate minified javascript"
+              >
+                <div class="fmt-top">
+                  <h3>Obfuscated JS bundles</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">a single minified .js bundle</p>
+                <p>
+                  Turns one packed, minified bundle back into readable modules.
+                </p>
+                <p class="need">Bring Wakaru. Verified on Linux.</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="provider"
+                data-text="mitmproxy flows proxy capture network"
+              >
+                <div class="fmt-top">
+                  <h3>Proxy captures</h3>
+                  <span class="badge">Provider</span>
+                </div>
+                <p class="exts">mitmproxy flow files</p>
+                <p>Reads the requests and responses recorded by a proxy.</p>
+                <p class="need">Bring mitmproxy. Linux only.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="tier">
+            <h2>Coming next</h2>
+            <p>
+              These are planned. They are listed so you know what the library is
+              growing toward; they are not available yet, here or in the tool.
+            </p>
+            <div class="fmt-grid">
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="java kotlin jar class aar classes methods decompile"
+              >
+                <div class="fmt-top">
+                  <h3>Java &amp; Kotlin</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.jar · .class · .aar</p>
+                <p>Classes, methods, dependencies, and decompiled code.</p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="python py pyc whl pyz bytecode imports packages"
+              >
+                <div class="fmt-top">
+                  <h3>Python</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.py · .pyc · .whl · .pyz</p>
+                <p>
+                  Source or bytecode structure, imports, package contents, and
+                  entry points.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="android dex aab apks xapk split bundle native libraries"
+              >
+                <div class="fmt-top">
+                  <h3>More Android</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.dex · .aab · .apks · .xapk</p>
+                <p>
+                  Standalone bytecode, split packages, bundled resources, and
+                  native libraries.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="linux packages deb rpm appimage dependencies scripts"
+              >
+                <div class="fmt-top">
+                  <h3>Linux packages</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.deb · .rpm · .AppImage</p>
+                <p>
+                  Installed files, dependencies, startup scripts, and bundled
+                  executables.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="archives rar compression extract"
+              >
+                <div class="fmt-top">
+                  <h3>RAR archives</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.rar</p>
+                <p>
+                  RAR files are recognized by their bytes today. Unpacking waits
+                  until it can be checked against real RAR test archives.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="sqlite db database tables indexes queries"
+              >
+                <div class="fmt-top">
+                  <h3>SQLite databases</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.sqlite · .sqlite3 · .db</p>
+                <p>
+                  Tables, relationships, indexes, and read-only queries against
+                  selected data.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="windows installers msi msixbundle appxbundle registry scripts"
+              >
+                <div class="fmt-top">
+                  <h3>Windows installers</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.msi · .msixbundle · .appxbundle</p>
+                <p>
+                  Installation steps, packaged files, registry changes, and
+                  scripts.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="container images oci docker layers entrypoint"
+              >
+                <div class="fmt-top">
+                  <h3>Container images</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">OCI layouts · Docker image archives</p>
+                <p>
+                  Layers, dependencies, entry points, and the changes between
+                  two images.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="debug symbols pdb dsym debug names types source lines"
+              >
+                <div class="fmt-top">
+                  <h3>Debug symbols</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">.pdb · .dSYM · .debug</p>
+                <p>
+                  Better names, types, and source locations tied to the matching
+                  binary.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="coming"
+                data-text="office pdf docx xlsx pptx doc xls ppt documents"
+              >
+                <div class="fmt-top">
+                  <h3>PDF &amp; office docs</h3>
+                  <span class="badge coming">Coming</span>
+                </div>
+                <p class="exts">
+                  .pdf · .docx · .xlsx · .pptx · .doc · .xls · .ppt
+                </p>
+                <p>
+                  Safe reading of the text, tables, and embedded files in PDFs
+                  and office documents.
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section class="tier">
+            <h2>Everyday files</h2>
+            <p>
+              The library is useful for ordinary files too, not only
+              reverse-engineering targets. Here is what the browser does with
+              the common ones today.
+            </p>
+            <div class="fmt-grid">
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="pdf document office docx xlsx pptx text txt markdown rtf"
+              >
+                <div class="fmt-top">
+                  <h3>Documents</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.pdf · .docx · .xlsx · .pptx · .txt · .md</p>
+                <p>
+                  Markdown and text get the structured reader; PDF and office
+                  files are identified with a text, hex, and strings view. Deep
+                  document parsing is on the way.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="images photos png jpg jpeg webp heic gif svg"
+              >
+                <div class="fmt-top">
+                  <h3>Images</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.png · .jpg · .webp · .heic · .svg · .gif</p>
+                <p>
+                  Identified by their bytes with size and SHA-256; the raw bytes
+                  and any text inside are viewable.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="audio video mp3 wav m4a mp4 mov mkv media"
+              >
+                <div class="fmt-top">
+                  <h3>Audio &amp; video</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.mp3 · .m4a · .wav · .mp4 · .mov · .mkv</p>
+                <p>
+                  Identified and hashed; the container bytes are viewable and
+                  the file is downloadable.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="code source js ts py go rust shell html css"
+              >
+                <div class="fmt-top">
+                  <h3>Code &amp; scripts</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.py · .js · .ts · .sh · .ps1 · .html · .css</p>
+                <p>
+                  Readable as text right away; the desktop tool maps whole
+                  JavaScript apps.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="data json yaml xml toml csv tsv config"
+              >
+                <div class="fmt-top">
+                  <h3>Data &amp; config</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">
+                  .json · .jsonl · .yaml · .xml · .toml · .csv · .tsv
+                </p>
+                <p>
+                  Read with a format-aware structure view: every value with its
+                  place in the file, problems with exact positions, and nothing
+                  fetched or run.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="database sqlite db sql"
+              >
+                <div class="fmt-top">
+                  <h3>Databases</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.db · .sqlite · .sqlite3 · .sql</p>
+                <p>
+                  Identified and previewable today; browsing tables and running
+                  read-only queries is coming.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="archives zip 7z tar gz rar compression"
+              >
+                <div class="fmt-top">
+                  <h3>Archives</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">
+                  .zip · .tar · .tar.gz · .gz (unpacked) · .xz · .7z (desktop) ·
+                  .rar (coming)
+                </p>
+                <p>
+                  Zip, tar, and gzip are unpacked and browsable now; xz and
+                  7-Zip unpack in the desktop tool; RAR is recognized only.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="installers exe dmg pkg apk msi setup"
+              >
+                <div class="fmt-top">
+                  <h3>Installers &amp; apps</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">
+                  .apk · .ipa · .msix (unpacked) · .exe · .dmg · .pkg
+                </p>
+                <p>
+                  App packages are unpacked; plain installers are identified and
+                  previewable.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="3d printing cad stl step dwg obj model"
+              >
+                <div class="fmt-top">
+                  <h3>3D &amp; CAD</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.stl · .step · .dwg · .obj</p>
+                <p>
+                  Identified by their bytes with a raw view; the original
+                  downloads intact.
+                </p>
+              </article>
+              <article
+                class="fmt"
+                data-tier="browser"
+                data-text="ai model gguf safetensors onnx weights"
+              >
+                <div class="fmt-top">
+                  <h3>AI model files</h3>
+                  <span class="badge browser">In your browser</span>
+                </div>
+                <p class="exts">.gguf · .safetensors · .onnx</p>
+                <p>
+                  Identified and hashed, with a header and strings view;
+                  downloadable in full.
+                </p>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <p class="muted formats-note">
+          Oopsware separates what it observed from what it could not. A file
+          being listed here means the library can read it to the level shown —
+          never that it ran the file or judged it safe.
+        </p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <a href="/" class="brand"
+          ><span class="brand-mark" aria-hidden="true">::</span>oopsware</a
+        >
+        <nav aria-label="Site">
+          <a href="/formats">File types</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/report">Report a file</a>
+          <a href="/about">About</a>
+        </nav>
+        <span class="footer-note">Stay curious. Leave it useful.</span>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oopsdemo"
+version = "1.2.3"
+description = "Fixture package for Oopsware's Python reader"
+requires-python = ">=3.9"
+dependencies = ["requests>=2", "rich; extra == 'pretty'"]
+license = { text = "MIT" }
+classifiers = ["Programming Language :: Python :: 3"]
+
+[project.optional-dependencies]
+pretty = ["rich"]
+
+[project.scripts]
+oopsdemo = "oopsdemo.cli:main"
+
+[project.entry-points."oopsdemo.plugins"]
+basic = "oopsdemo.plugins:Basic"
+
+[tool.setuptools]
+license-files = ["LICENSE"]

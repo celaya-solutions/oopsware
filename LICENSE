@@ -1,0 +1,45 @@
+Document:    Oopsware License and Scope
+Version:     v1.0.2
+Author:      Celaya Solutions
+Contact:     hello@celayasolutions.com
+Date:        2026-10-13
+SHA256:      c97c82574e1197ec1b7104fe2c546c6e8a08dad69e8113257eb534b7b0528744
+Chain:       solana-mainnet
+Tx:          3pf8XieKyKfLWpBh5NaawaSqvwqhFCyr8i65YQ3pwdEB1d6ePrCnAYaDkcozHTEnUNUhWNXjLTkJM2AkMvaNUUft
+License:     All Rights Reserved / Celaya Solutions
+
+Oopsware contains work under more than one license.
+
+1. Original and previously MIT-covered work
+
+REA was created by morluto and its contributors.
+Copyright (c) 2026 morluto.
+
+The original work and all work already distributed under MIT through CSR
+commit 86b180f332bcb34e32bc13454e75b0cdb6883568 retain their MIT license.
+The complete original notice is in LICENSES/REA-MIT.txt and is incorporated
+here. Those rights, including commercial use, are not withdrawn or limited. Any other existing MIT grants also remain intact.
+
+2. New CSR contributions
+
+Required Notice: Copyright (c) 2026 Celaya Solutions
+Required Notice: Oopsware is an independent fork of REA by morluto and contributors.
+
+New copyrightable contributions owned by Celaya Solutions, beginning with
+the Oopsware rebrand after the commit above, are offered under the unmodified
+PolyForm Noncommercial License 1.0.0, included in
+LICENSES/PolyForm-Noncommercial-1.0.0.txt and available at
+https://polyformproject.org/licenses/noncommercial/1.0.0/.
+
+These terms permit noncommercial use, modification, and distribution as
+specified in that license. They do not grant commercial use of those new
+contributions. They apply only to rights Celaya Solutions holds, and do not
+replace MIT or third-party grants. Existing licenses and legal exceptions
+remain intact. No right to impersonate CSR or an upstream author is granted.
+
+3. Third-party work
+
+Third-party code, dependencies, example assets, and provider tools retain
+their own licenses and notices. See CREDITS.md, third_party/, the example
+asset notices, and each dependency's license. Distribute the notices with
+the corresponding work. A document's CSR header does not override this scope.

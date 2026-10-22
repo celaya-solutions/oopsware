@@ -1,0 +1,224 @@
+{
+  "provenance": {
+    "source": "docs/verification/javascript-interruption-applicability-2026-10-15.json",
+    "sha256": "b24ee153a6ef19bfc21881840e7f0f255e47c8160c8f15995a11af396216aea0",
+    "recorded_date": "2026-10-15",
+    "selection": "Unmodified ElectronAppWrapper.js.map rows from baseline and final timeout results; not a new provider run."
+  },
+  "cohorts": {
+    "baseline": {
+      "timeout": {
+        "result": {
+          "structured_scopes": [
+            {
+              "path": "ElectronAppWrapper.js.map",
+              "scopes": [
+                {
+                  "node_id": "jag_node_2361c5ae8ec571bdd480605526fc5b38900fa7fb94571c5f940fcfdfe3594c25",
+                  "label": "ElectronAppWrapper.js.map parse scope",
+                  "source_map_reference": null,
+                  "properties": {
+                    "path": "ElectronAppWrapper.js.map",
+                    "operation": "analyze-javascript-source",
+                    "limitation": "Source analysis was interrupted: Analysis operation timed out after 1ms: analyze_javascript_application",
+                    "analysis_failure": {
+                      "code": "provider_timeout",
+                      "category": "timeout",
+                      "message": "Analysis took too long. Try a smaller request, then run `rea doctor` if it continues.",
+                      "retryable": true,
+                      "remediation": {
+                        "action": "Analysis took too long. Try a smaller request, then run `rea doctor` if it continues."
+                      },
+                      "details": {
+                        "operation": "analyze_javascript_application",
+                        "timeout_ms": 1,
+                        "captured_output": {
+                          "stdout": "",
+                          "stderr": "",
+                          "truncated": false,
+                          "stderr_bytes": 0,
+                          "exit_code": null,
+                          "signal": null
+                        }
+                      }
+                    }
+                  },
+                  "evidence": {
+                    "authority": "ast-static-analysis",
+                    "state": "unavailable",
+                    "confidence": "unknown",
+                    "artifact": {
+                      "available": true,
+                      "artifact_id": "art_825d88385763ad9562a1c901561e263c8cac51a41d8866432d206037cc362bd4",
+                      "sha256": "825d88385763ad9562a1c901561e263c8cac51a41d8866432d206037cc362bd4"
+                    },
+                    "location": {
+                      "available": true,
+                      "value": {
+                        "kind": "artifact-path",
+                        "path": "ElectronAppWrapper.js.map"
+                      }
+                    },
+                    "extractor": {
+                      "name": "rea-javascript-artifact-reconstruction",
+                      "version": "1",
+                      "operation": "analyze-javascript-source",
+                      "executable_sha256": null
+                    },
+                    "coverage": {
+                      "status": "partial",
+                      "truncated": false,
+                      "omitted_count": null,
+                      "limits": [
+                        {
+                          "name": "javascript_analysis_worker_timeout_ms",
+                          "value": 1,
+                          "unit": "milliseconds"
+                        }
+                      ]
+                    },
+                    "limitations": [
+                      "Source analysis was interrupted: Analysis operation timed out after 1ms: analyze_javascript_application"
+                    ],
+                    "evidence_ids": []
+                  },
+                  "observation_id": "jag_observation_8ea415abaec186c5434fb4c6f10f4d3da2cbe4f762bc22a5e73a139c7d3f67af",
+                  "identifier_strategy": {
+                    "strategy": "semantic-content-sha256",
+                    "stability": "observation-exact"
+                  }
+                }
+              ],
+              "evidence_id": "ev_ca6cd9d1d390d2a7dec04f2622b20d8c8dc0cb00559fe9ed80667b95a942f372",
+              "source_coverage": {
+                "status": "partial",
+                "source_graph_status": "partial",
+                "total_seed_matches": 3
+              },
+              "graph_coverage": {
+                "status": "partial",
+                "truncated": false,
+                "omitted_count": null,
+                "limits": [
+                  {
+                    "name": "javascript_analysis_worker_timeout_ms",
+                    "value": 1,
+                    "unit": "milliseconds"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "final": {
+      "timeout": {
+        "result": {
+          "structured_scopes": [
+            {
+              "source": "retained-feature-trace",
+              "path": "ElectronAppWrapper.js.map",
+              "scopes": [
+                {
+                  "node_id": "jag_node_82fcfceda6e334ca0bfdbddf79306a11a5b958e2c65570a1d862dc001e27bbbc",
+                  "label": "ElectronAppWrapper.js.map parse scope",
+                  "source_map_reference": null,
+                  "properties": {
+                    "analysis_status": "not-started",
+                    "path": "ElectronAppWrapper.js.map",
+                    "operation": "parse-local-source-map",
+                    "limitation": "Source analysis was interrupted: Analysis operation timed out after 1ms: analyze_javascript_application",
+                    "analysis_failure": {
+                      "code": "provider_timeout",
+                      "category": "timeout",
+                      "message": "Analysis took too long. Try a smaller request, then run `rea doctor` if it continues.",
+                      "retryable": true,
+                      "remediation": {
+                        "action": "Analysis took too long. Try a smaller request, then run `rea doctor` if it continues."
+                      },
+                      "details": {
+                        "operation": "analyze_javascript_application",
+                        "timeout_ms": 1,
+                        "captured_output": {
+                          "stdout": "",
+                          "stderr": "",
+                          "truncated": false,
+                          "stderr_bytes": 0,
+                          "exit_code": null,
+                          "signal": null
+                        }
+                      }
+                    }
+                  },
+                  "evidence": {
+                    "authority": "artifact-bytes",
+                    "state": "unavailable",
+                    "confidence": "unknown",
+                    "artifact": {
+                      "available": true,
+                      "artifact_id": "art_825d88385763ad9562a1c901561e263c8cac51a41d8866432d206037cc362bd4",
+                      "sha256": "825d88385763ad9562a1c901561e263c8cac51a41d8866432d206037cc362bd4"
+                    },
+                    "location": {
+                      "available": true,
+                      "value": {
+                        "kind": "artifact-path",
+                        "path": "ElectronAppWrapper.js.map"
+                      }
+                    },
+                    "extractor": {
+                      "name": "rea-javascript-artifact-reconstruction",
+                      "version": "1",
+                      "operation": "parse-local-source-map",
+                      "executable_sha256": null
+                    },
+                    "coverage": {
+                      "status": "partial",
+                      "truncated": false,
+                      "omitted_count": null,
+                      "limits": [
+                        {
+                          "name": "javascript_analysis_worker_timeout_ms",
+                          "value": 1,
+                          "unit": "milliseconds"
+                        }
+                      ]
+                    },
+                    "limitations": [
+                      "Source analysis was interrupted: Analysis operation timed out after 1ms: analyze_javascript_application"
+                    ],
+                    "evidence_ids": []
+                  },
+                  "observation_id": "jag_observation_4b04b2982325de96322efd493507386b986aca57309e959870831dbd6dffd4fd",
+                  "identifier_strategy": {
+                    "strategy": "semantic-content-sha256",
+                    "stability": "observation-exact"
+                  }
+                }
+              ],
+              "evidence_id": "ev_bd1433b6c29798e4fab50fc2ceab69468f688f49dd89b3e34c2e7150c7bf0173",
+              "source_coverage": {
+                "status": "partial",
+                "source_graph_status": "partial",
+                "total_seed_matches": 3
+              },
+              "graph_coverage": {
+                "status": "partial",
+                "truncated": false,
+                "omitted_count": null,
+                "limits": [
+                  {
+                    "name": "javascript_analysis_worker_timeout_ms",
+                    "value": 1,
+                    "unit": "milliseconds"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

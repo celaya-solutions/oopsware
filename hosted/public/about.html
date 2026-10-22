@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="What Oopsware is, how the public library works, and credit to the open-source project it builds on."
+    />
+    <title>About · Oopsware</title>
+    <link rel="stylesheet" href="/site.css" />
+    <script src="/config.js"></script>
+    <script type="module" src="/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a href="/" class="brand" aria-label="Oopsware home"
+          ><span class="brand-mark" aria-hidden="true">::</span>oopsware</a
+        >
+        <button
+          class="icon-button nav-toggle"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Menu"
+        >
+          ≡
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <a href="/">Library</a>
+          <a href="/formats">File types</a>
+          <a href="/about">About</a>
+          <a href="/report">Report a file</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page" id="main">
+      <div class="wrap">
+        <div class="page-head">
+          <p class="updated">About</p>
+          <h1>An open library for the curious</h1>
+          <p class="lede">
+            Bring a file. See what it's made of. Share what you find. No
+            account, nothing to buy.
+          </p>
+        </div>
+        <div class="prose">
+          <h2>What this is</h2>
+          <p>
+            Oopsware is a workbench for taking software apart and understanding
+            how it works. This site is its public library: anyone can upload a
+            file, the library inspects it without running it, and anyone can
+            browse the findings and download the file or the pieces found inside
+            it.
+          </p>
+
+          <h2>How to use it</h2>
+          <ul>
+            <li>
+              <a href="/">Browse the library</a> and open any file to read its
+              findings.
+            </li>
+            <li>
+              Upload something you have the right to share. It's inspected
+              automatically.
+            </li>
+            <li>
+              See <a href="/formats">File types</a> for exactly what you get for
+              each kind of file.
+            </li>
+          </ul>
+
+          <h2>Honest by design</h2>
+          <p>
+            The library separates what it observed from what it could not
+            determine. A file being inspected never means it was run, and never
+            means it was judged safe. Deep analysis — disassembly, decompiling —
+            happens in the desktop tool with a provider you install, not on this
+            public service.
+          </p>
+
+          <h2>Credit</h2>
+          <p>
+            Oopsware is an independent fork of
+            <a
+              href="https://github.com/morluto/rea"
+              rel="noreferrer noopener"
+              target="_blank"
+              >REA — Reverse Engineer Anything</a
+            >, created by morluto and the REA contributors. The original
+            command-line tool, analysis engine, and provider integrations came
+            from that work, and it is credited and licensed in the project's
+            repository. Thank you to everyone who built it.
+          </p>
+          <p>
+            Provider names such as Hopper, Ghidra, IDA, jadx, and apktool belong
+            to their own projects; they are separate tools, not part of
+            Oopsware.
+          </p>
+
+          <h2>Open-source apps in the library</h2>
+          <p>
+            These apps came from their projects' official releases. Disk-image
+            (<code>.dmg</code>) downloads were checked against the checksum the
+            project publishes; apps repackaged as a zip of the app folder (so
+            you can look inside) were instead confirmed by their Apple-notarized
+            code signature, since repackaging changes the bytes. Either way the
+            files are unchanged. Each app keeps its own license and name, and
+            each source link points to the code for that exact version.
+          </p>
+          <ul>
+            <li>
+              <strong>Blender 5.2.2</strong> · GPL-3.0-or-later ·
+              <a
+                href="https://download.blender.org/source/blender-5.2.2.tar.xz"
+                rel="noreferrer noopener"
+                >source</a
+              >
+              ·
+              <a
+                href="https://download.blender.org/release/Blender5.2/blender-5.2.2-macos-arm64.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>GIMP 3.2.6</strong> · GPL-3.0-or-later ·
+              <a
+                href="https://gitlab.gnome.org/GNOME/gimp/-/tree/GIMP_3_2_6"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://download.gimp.org/gimp/v3.2/macos/gimp-3.2.6-arm64.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Krita 6.0.4</strong> · GPL-3.0-or-later ·
+              <a
+                href="https://invent.kde.org/graphics/krita/-/tree/v6.0.4"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://download.kde.org/stable/krita/6.0.4/krita-6.0.4-signed.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>LibreOffice 26.8.1</strong> · MPL-2.0 ·
+              <a
+                href="https://download.documentfoundation.org/libreoffice/src/26.8.1/"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://download.documentfoundation.org/libreoffice/stable/26.8.1/mac/aarch64/LibreOffice_26.8.1_MacOS_aarch64.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Audacity 4.0.1</strong> · GPL-3.0 ·
+              <a
+                href="https://github.com/audacity/audacity/tree/Audacity-4.0.1"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/audacity/audacity/releases/download/Audacity-4.0.1/audacity-macOS-4.0.1-arm64.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Godot 4.7.2</strong> · MIT ·
+              <a
+                href="https://github.com/godotengine/godot/tree/4.7.2-stable"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_macos.universal.zip"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Arduino IDE 2.3.10</strong> · AGPL-3.0 ·
+              <a
+                href="https://github.com/arduino/arduino-ide/tree/2.3.10"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/arduino/arduino-ide/releases/download/2.3.10/arduino-ide_2.3.10_macOS_arm64.zip"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>JupyterLab Desktop 4.6.3-1</strong> · BSD-3-Clause ·
+              <a
+                href="https://github.com/jupyterlab/jupyterlab-desktop/tree/v4.6.3-1"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/jupyterlab/jupyterlab-desktop/releases/download/v4.6.3-1/JupyterLab-macOS-arm64.zip"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>DuckDB 1.5.6</strong> (command line) · MIT ·
+              <a
+                href="https://github.com/duckdb/duckdb/tree/v1.5.6"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/duckdb/duckdb/releases/download/v1.5.6/duckdb_cli-osx-arm64.zip"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>SQLite 3.54.1</strong> (command-line tools) · public
+              domain ·
+              <a
+                href="https://sqlite.org/src/timeline?t=version-3.54.1"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://sqlite.org/2026/sqlite-tools-osx-arm64-3540100.zip"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>7-Zip 26.04</strong> for macOS · LGPL-2.1-or-later with
+              the unRAR restriction ·
+              <a
+                href="https://github.com/ip7z/7zip/tree/26.04"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/ip7z/7zip/releases/download/26.04/7z2604-mac.tar.xz"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>llama.cpp b11700</strong> · MIT ·
+              <a
+                href="https://github.com/ggml-org/llama.cpp/tree/b11700"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/ggml-org/llama.cpp/releases/download/b11700/llama-b11700-bin-macos-arm64.tar.gz"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Transmission 4.1.3</strong> · GPL-2.0-or-later ·
+              <a
+                href="https://github.com/transmission/transmission/releases/tag/4.1.3"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/transmission/transmission/releases/download/4.1.3/Transmission-4.1.3.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Open Video Downloader 3.2.1</strong> · AGPL-3.0 ·
+              <a
+                href="https://github.com/jely2002/youtube-dl-gui/releases/tag/app-v3.2.1"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://github.com/jely2002/youtube-dl-gui/releases/download/app-v3.2.1/Open.Video.Downloader_3.2.1_aarch64.dmg"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+            </li>
+            <li>
+              <strong>Wireshark 4.6.9</strong> · GPL-2.0-or-later ·
+              <a
+                href="https://gitlab.com/wireshark/wireshark/-/tree/v4.6.9"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a
+                href="https://www.wireshark.org/download.html"
+                rel="noreferrer noopener"
+                >official download</a
+              >
+              · signed by the Wireshark Foundation
+            </li>
+            <li>
+              <strong>OpenCode 2.0.26</strong> (desktop) · MIT ·
+              <a
+                href="https://github.com/sst/opencode"
+                rel="noreferrer noopener"
+                target="_blank"
+                >source</a
+              >
+              ·
+              <a href="https://opencode.ai" rel="noreferrer noopener"
+                >official download</a
+              >
+              · signed by Anomaly Innovations, Inc.
+            </li>
+          </ul>
+
+          <h2>License &amp; privacy</h2>
+          <p>
+            Upstream code keeps its original open-source license; new work in
+            this fork is for noncommercial use. See
+            <a href="/privacy">Privacy</a> and <a href="/terms">Terms</a> for
+            how the library handles files and data.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <a href="/" class="brand"
+          ><span class="brand-mark" aria-hidden="true">::</span>oopsware</a
+        >
+        <nav aria-label="Site">
+          <a href="/formats">File types</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/report">Report a file</a>
+          <a href="/about">About</a>
+        </nav>
+        <span class="footer-note">Stay curious. Leave it useful.</span>
+      </div>
+    </footer>
+  </body>
+</html>
