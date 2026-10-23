@@ -1,12 +1,12 @@
 ```text
 Document:    Oopsware
-Version:     v1.23.4
+Version:     v1.23.5
 Author:      Celaya Solutions
 Contact:     hello@celayasolutions.com
 Date:        2026-10-22
-SHA256:      43a9da388b097a3c3feb23bd4abdee7be702fe4bceaf01f1a14e1ba4aca2f9c9
+SHA256:      5064ff66c090dd2eb9f6520a284b894c120f371d15d73d74fce73ff4984e8bb1
 Chain:       solana-mainnet
-Tx:          63KqqKDEd2JG1q1i5q6KEpEVgjWdeZnW9xdwYWcu3PWA9nbxRwuHpy3uxkQdNCdPp2KgrHpS516cvv51ysmCjFND
+Tx:          5b17dnwEoyaf8gDEJMYtTLwgizapfXcBtoGRGvZsigmNzHfbavjwEdjAeshW1uBEYprLp444DgYQ9uKnMHtVcWuU
 License:     All Rights Reserved / Celaya Solutions
 ```
 
@@ -222,6 +222,7 @@ reader below and opens nested archives for you; see the
 | Tar, gzip, xz, 7-Zip | `.tar`, `.gz`, `.tgz`, `.xz`, `.txz`, `.7z`                                  | `inspect_artifact`, `extract_artifact`                            | Streamed; links recorded, never created; no passwords tried. xz and 7z use the installed `xz` and `bsdtar`                                                                                                                                                                                                          |
 | RAR                  | `.rar`                                                                       | `inspect_artifact`                                                | Identified only. bzip2 and zstd are not read yet                                                                                                                                                                                                                                                                    |
 | Linux packages       | `.deb`, `.rpm`, `.AppImage`, `.squashfs`, `.sqsh`                            | `inspect_linux_package`, `inspect_artifact`, `extract_artifact`   | Metadata, scripts (never run), digests rechecked. SquashFS: gzip, zstd and lz4 only                                                                                                                                                                                                                                 |
+| ISO 9660 disc images | `.iso` (also identified by bytes without a suffix) | `inspect_artifact`, `extract_artifact` | Read through installed `bsdtar`, without mounting; Joliet and Rock Ridge names follow libarchive. UDF-only images are unsupported. |
 | Container images     | OCI layout folder, OCI archive `.tar`, `docker save` `.tar`                  | `inspect_container_image`, `inspect_artifact`, `extract_artifact` | Layer digests and diff ids rechecked; whiteouts applied. A plain tar or `docker export` is not an image                                                                                                                                                                                                             |
 | Debug symbols        | ELF `.debug` files and binaries, Mach-O, `.dSYM` bundles                     | `inspect_debug_symbols`                                           | DWARF 2–5 units, functions and line tables; paired to a binary by UUID or build id. PDB is not read yet                                                                                                                                                                                                             |
 | Office documents     | `.docx`, `.xlsx`, `.pptx`, `.docm`, `.xlsm`, `.pptm`, `.doc`, `.xls`, `.ppt` | `inspect_office_document`                                         | Properties, macro/OLE/link inventory (hashed, never run), paragraphs, worksheet cells with formulas apart from cached values, slides. Legacy 97-2003 files read the same way; encrypted files are refused                                                                                                           |

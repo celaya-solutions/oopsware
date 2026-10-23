@@ -230,6 +230,7 @@ export const ARTIFACT_GRAPH_FORMAT_IDS: Readonly<
   entitlements: "entitlements",
   directory: "directory",
   tar: "tar",
+  iso: "iso",
   gzip: "gzip",
   xz: "xz",
   "7z": "7z",

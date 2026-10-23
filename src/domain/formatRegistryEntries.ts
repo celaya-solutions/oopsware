@@ -520,6 +520,10 @@ const legacyOfficeFacets = (): FormatEntry["capabilities"] => {
 const ADMITTED: Partial<
   Record<FormatFields["id"], FormatEntry["capabilities"]>
 > = {
+  iso: externallyDecoded(
+    "ISO 9660 images are read through installed libarchive bsdtar without mounting. Joliet and Rock Ridge names follow libarchive. UDF-only images are not supported. " +
+      ARCHIVE_MEMBERS,
+  ),
   tar: both({
     ...archiveFacets(ARCHIVE_MEMBERS),
     identify: declare(

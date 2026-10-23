@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  hasIsoSignature,
+  ISO_DESCRIPTOR_OFFSET,
+  ISO_SIGNATURE_BYTES,
+} from "./archiveStreamFormat.js";
 
 import { observeMzWindowsHeader } from "./dosMz.js";
 import {
@@ -436,6 +441,24 @@ const byteCandidates = (
   ];
   if (hasXarSignature(prefix))
     found.push(signature("xar", evidence(prefix, 0, 4), "XAR header magic."));
+  if (hasIsoSignature(prefix))
+    found.push(
+      signature(
+        "iso",
+        evidence(prefix, ISO_DESCRIPTOR_OFFSET, 7),
+        "ISO 9660 volume descriptor header; filesystem contents are not validated.",
+      ),
+    );
+  else if (
+    prefix.length < ISO_SIGNATURE_BYTES &&
+    fileSize >= ISO_SIGNATURE_BYTES
+  ) {
+    unsettled.undecided.add("iso");
+    if (hinted.includes("iso"))
+      unsettled.limitations.push(
+        "The ISO 9660 volume descriptor header was not examined.",
+      );
+  }
   if (
     bytesAt(prefix, 0, ascii("!<arch>\n")) &&
     bytesAt(prefix, 8, ascii("debian-binary")) &&

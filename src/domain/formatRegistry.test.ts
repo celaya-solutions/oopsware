@@ -230,7 +230,7 @@ describe("capability states", () => {
           "unsupported",
         );
     }
-    for (const id of ["xz", "7z"] as const) {
+    for (const id of ["xz", "7z", "iso"] as const) {
       expect(formatCapability(id, "inventory", LOCAL_DARWIN).state).toBe(
         "partial",
       );

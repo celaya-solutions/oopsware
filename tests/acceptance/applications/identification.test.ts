@@ -1,4 +1,6 @@
 import { Client } from "@modelcontextprotocol/client";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -6,7 +8,7 @@ import { join, resolve } from "node:path";
 import { expect } from "vitest";
 import { toolContract } from "../../../src/contracts/toolContracts.js";
 import { artifactIdentificationSchema } from "../../../src/domain/identification/identification.js";
-import { GZIP } from "../../fixtures/archiveProducers.js";
+import { BSDTAR, GZIP } from "../../fixtures/archiveProducers.js";
 import { produceTarGz } from "../../fixtures/identificationProducers.js";
 import { createTestTempDirectory } from "../../fixtures/temporaryDirectory.js";
 import { cliTest } from "../../support/cli/cliFixture.js";
@@ -100,4 +102,56 @@ cliTest.skipIf(GZIP === null)(
     }
   },
   240_000,
+);
+
+cliTest.skipIf(BSDTAR === null)(
+  "identifies ISO members through compiled CLI and stdio MCP with matching evidence",
+  async ({ cli }) => {
+    const root = await createTestTempDirectory("rea-iso-acceptance-");
+    await writeFile(join(root, "data.csv"), "a,b\n1,2\n");
+    const path = join(root, "disc.iso");
+    await promisify(execFile)(BSDTAR!, [
+      "-cf",
+      path,
+      "--format",
+      "iso9660",
+      "-C",
+      root,
+      "data.csv",
+    ]);
+    const result = await cli.run({
+      arguments: ["identify-artifact", path, "--json"],
+    });
+    expect(result.exitCode, result.stdout + result.stderr).toBe(0);
+    const contract = toolContract("identify_artifact");
+    const evidence = contract.outputSchema.parse(result.json);
+    const identified = artifactIdentificationSchema.parse(
+      evidence.normalized_result,
+    );
+    expect(identified.answer.format).toBe("iso");
+    expect(identified.pieces).toContainEqual(
+      expect.objectContaining({ path: "data.csv", format: "csv" }),
+    );
+    const client = new Client({ name: "iso-acceptance", version: "1" });
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [resolve("scripts/rea.mjs"), "mcp"],
+      cwd: process.cwd(),
+      env: { PATH: process.env.PATH ?? "", REA_LOG_LEVEL: "silent" },
+      stderr: "pipe",
+    });
+    try {
+      await client.connect(transport);
+      const response = await client.callTool({
+        name: "identify_artifact",
+        arguments: { path },
+      });
+      expect(response.isError).not.toBe(true);
+      const mcp = contract.outputSchema.parse(response.structuredContent);
+      expect(mcp.evidence_id).toBe(evidence.evidence_id);
+      expect(mcp.normalized_result).toEqual(evidence.normalized_result);
+    } finally {
+      await client.close();
+    }
+  },
 );

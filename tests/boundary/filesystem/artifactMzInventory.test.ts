@@ -104,11 +104,14 @@ const peFixture = (offset: number): Buffer => {
 };
 
 const dosWithDistantRelocations = (): Buffer => {
-  const bytes = Buffer.alloc(16_384);
+  const headerParagraphs = Math.ceil((FORMAT_SIGNATURE_PREFIX_BYTES + 6) / 16);
+  const bytes = Buffer.alloc(
+    Math.ceil((headerParagraphs * 16 + 512) / 512) * 512,
+  );
   bytes.write("MZ", 0, "ascii");
-  bytes.writeUInt16LE(32, 4);
+  bytes.writeUInt16LE(bytes.length / 512, 4);
   bytes.writeUInt16LE(1, 6);
-  bytes.writeUInt16LE(768, 8);
+  bytes.writeUInt16LE(headerParagraphs, 8);
   bytes.writeUInt16LE(FORMAT_SIGNATURE_PREFIX_BYTES + 2, 24);
   return bytes;
 };

@@ -12,6 +12,7 @@ import { z } from "zod";
 
 /** Storage encodings and containers established from bytes. */
 export const STORAGE_FORMAT_IDS = [
+  "iso",
   "zip",
   "xar",
   "udif",

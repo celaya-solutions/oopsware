@@ -37,6 +37,7 @@ export const createReader = (
   if (isZipPackageFormat(format))
     return new ZipArtifactReader(path, format, undefined, rootSource);
   switch (format) {
+    case "iso":
     case "tar":
     case "gzip":
     case "xz":

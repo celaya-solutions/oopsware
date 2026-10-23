@@ -46,6 +46,7 @@ import {
 } from "../domain/zipPackageFormat.js";
 import {
   classifyArchiveStreamBytes,
+  ISO_SIGNATURE_BYTES,
   isMsiRoot,
   isArchiveStreamFormat,
 } from "../domain/archiveStreamFormat.js";
@@ -325,8 +326,8 @@ const detectArtifactFormat = async (
 > => {
   throwIfTargetResolutionCancelled(signal);
   const lower = path.toLowerCase();
-  // Covers a tar header's magic at offset 257 inside its first 512-byte block.
-  const magic = Buffer.alloc(4096);
+  // Covers archive headers through the ISO 9660 volume descriptor.
+  const magic = Buffer.alloc(ISO_SIGNATURE_BYTES);
   const observed = await handle.read(magic, 0, magic.length, 0);
   throwIfTargetResolutionCancelled(signal);
   if (

@@ -141,6 +141,12 @@ export const PLANNED_FORMATS: Readonly<
   ],
   F06: [
     {
+      id: "iso",
+      label: "ISO 9660 disc image",
+      extensions: [".iso"],
+      byteSignature: true,
+    },
+    {
       id: "tar",
       label: "Tar archive",
       extensions: [".tar"],

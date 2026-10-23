@@ -7,6 +7,7 @@ import { createGunzip, createZstdDecompress, type Gunzip } from "node:zlib";
 import type { ArtifactCommand } from "../../domain/artifactGraph.js";
 import {
   hasTarHeader,
+  ISO_DESCRIPTOR_OFFSET,
   TAR_BLOCK_BYTES,
   type ReadableArchiveStreamFormat,
 } from "../../domain/archiveStreamFormat.js";
@@ -63,6 +64,7 @@ export const DEFAULT_ARCHIVE_READ_POLICY: ArchiveReadPolicy = {
 const DIAGNOSTIC_BYTES = 16 * 1024;
 const EXIT_WAIT_MS = 30_000;
 const STREAM_LABEL: Readonly<Record<ReadableArchiveStreamFormat, string>> = {
+  iso: "ISO 9660",
   tar: "Tar",
   gzip: "Gzip",
   xz: "XZ",
@@ -88,10 +90,10 @@ interface DecoderProcess {
 }
 
 /**
- * Sequential reader for tar archives, gzip and xz streams, and 7z archives.
+ * Sequential reader for tar, ISO 9660, gzip and xz streams, and 7z archives.
  *
  * Compression streams are decoded in order; a decoded tar archive exposes
- * its members, and any other decoded payload is one file. 7z archives are
+ * its members, and any other decoded payload is one file. ISO and 7z archives are
  * converted to a pax stream by libarchive's bsdtar and parsed by the same tar
  * parser, so exact names never pass through a column listing. Members must
  * be opened in inventory order while they are current.
@@ -169,6 +171,7 @@ export class StreamArchiveArtifactReader implements ArtifactReader {
       if (
         this.format === "tar" ||
         this.format === "7z" ||
+        this.format === "iso" ||
         this.format === "deb"
       )
         yield* this.#tarMembers(source, signal);
@@ -186,8 +189,8 @@ export class StreamArchiveArtifactReader implements ArtifactReader {
       await this.#observeGzipTail(handle, initial.size);
       if (this.format !== "tar")
         this.#observations.unshift(
-          this.format === "7z"
-            ? `libarchive bsdtar converted the 7z archive to a ${String(state.bytes)}-byte pax stream with SHA-256 ${state.hash.digest("hex")}; member bytes are read from that stream.`
+          this.format === "7z" || this.format === "iso"
+            ? `libarchive bsdtar converted the ${STREAM_LABEL[this.format]} archive to a ${String(state.bytes)}-byte pax stream with SHA-256 ${state.hash.digest("hex")}; member bytes are read from that stream.`
             : this.#linux !== undefined
               ? `${STREAM_LABEL[this.format]} payload (${this.#linux.compression}) was decoded to a ${String(state.bytes)}-byte ${this.#linux.container} stream with SHA-256 ${state.hash.digest("hex")}.`
               : `${STREAM_LABEL[this.format]} input was decoded to ${String(state.bytes)} bytes with SHA-256 ${state.hash.digest("hex")}.`,
@@ -330,15 +333,21 @@ export class StreamArchiveArtifactReader implements ArtifactReader {
           handle,
           signal,
         );
+      case "iso":
       case "7z": {
-        const header = await observeSevenZipHeader(handle, size);
-        if (header.kind === "encrypted") {
+        if (this.format === "iso")
+          await this.#validateIso(handle, size, signal);
+        const header =
+          this.format === "7z"
+            ? await observeSevenZipHeader(handle, size)
+            : null;
+        if (header?.kind === "encrypted") {
           this.#omissions.push(
             `7z archive headers are encrypted (coders ${header.coderIds.join(", ")}); member names and sizes are not visible and no password was attempted.`,
           );
           return null;
         }
-        if (header.kind === "empty") {
+        if (header?.kind === "empty") {
           this.#observations.push(
             "7z archive declares an empty next header: it has no members.",
           );
@@ -356,6 +365,57 @@ export class StreamArchiveArtifactReader implements ArtifactReader {
       case "rpm":
         return this.#linuxPayload(handle, size, this.format, signal);
     }
+  }
+
+  /** libarchive can silently accept a truncated ISO as empty; validate its declared extent first. */
+  async #validateIso(
+    handle: FileHandle,
+    size: number,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const descriptor = Buffer.alloc(2048);
+    for (
+      let offset = ISO_DESCRIPTOR_OFFSET;
+      offset + descriptor.length <= size;
+      offset += descriptor.length
+    ) {
+      abortIfNeeded(signal);
+      if (
+        offset - ISO_DESCRIPTOR_OFFSET + descriptor.length >
+        this.#policy.maximumDecodedBytes
+      )
+        throw new ArtifactReaderFailure(
+          "limit",
+          "ISO volume descriptors exceed the archive byte limit",
+        );
+      const read = await handle.read(descriptor, 0, descriptor.length, offset);
+      if (
+        read.bytesRead !== descriptor.length ||
+        descriptor.toString("ascii", 1, 6) !== "CD001" ||
+        descriptor[6] !== 1
+      )
+        break;
+      if (descriptor[0] === 255) break;
+      if (descriptor[0] !== 1) continue;
+      const blocks = descriptor.readUInt32LE(80);
+      const blockSize = descriptor.readUInt16LE(128);
+      if (
+        blocks !== descriptor.readUInt32BE(84) ||
+        blockSize !== descriptor.readUInt16BE(130) ||
+        ![512, 1024, 2048].includes(blockSize) ||
+        blocks * blockSize < offset + descriptor.length ||
+        blocks * blockSize > size
+      )
+        throw new ArtifactReaderFailure(
+          "format",
+          "ISO volume extent is invalid or truncated",
+        );
+      return;
+    }
+    throw new ArtifactReaderFailure(
+      "format",
+      "ISO primary volume descriptor is missing or truncated",
+    );
   }
 
   /** Decode the installable payload of a .deb (data.tar.*) or .rpm (cpio); nothing in the package runs. */
@@ -775,8 +835,8 @@ export class StreamArchiveArtifactReader implements ArtifactReader {
         this.#observations.push(
           this.format === "tar"
             ? `Tar first header uses the ${member.profile} profile.`
-            : this.format === "7z"
-              ? "Member names, kinds, and sizes come from libarchive's pax conversion of the 7z archive."
+            : this.format === "7z" || this.format === "iso"
+              ? `Member names, kinds, and sizes come from libarchive's pax conversion of the ${STREAM_LABEL[this.format]} archive.`
               : `The decoded ${STREAM_LABEL[this.format]} stream is a tar archive; its first header uses the ${member.profile} profile.`,
         );
         first = false;

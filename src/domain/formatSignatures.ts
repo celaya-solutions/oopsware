@@ -12,7 +12,10 @@ import {
   type FatSliceHeaderEvidence,
 } from "./apple/machoContainer.js";
 import { hasZipSignature } from "./zipPackageFormat.js";
-import { classifyArchiveStreamBytes } from "./archiveStreamFormat.js";
+import {
+  classifyArchiveStreamBytes,
+  ISO_SIGNATURE_BYTES,
+} from "./archiveStreamFormat.js";
 
 /**
  * Byte-signature owners. Every check reads bytes the caller already holds;
@@ -20,7 +23,7 @@ import { classifyArchiveStreamBytes } from "./archiveStreamFormat.js";
  */
 
 /** Leading bytes read once for classification and candidate detection. */
-export const FORMAT_SIGNATURE_PREFIX_BYTES = 8_192;
+export const FORMAT_SIGNATURE_PREFIX_BYTES = ISO_SIGNATURE_BYTES;
 
 /** A UDIF disk image ends in a 512-byte `koly` trailer. */
 export const UDIF_TRAILER_BYTES = 512;

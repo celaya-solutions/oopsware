@@ -1,4 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { parseBinaryTarget } from "../../../src/application/BinaryTargetResolver.js";
+import { detectFormatCandidates } from "../../../src/domain/formatDetection.js";
 import {
   mkdir,
   readFile,
@@ -696,4 +700,81 @@ it("identifies RAR by its marker block and lists nothing", async () => {
     message: expect.stringMatching(/no extraction reader: rar/u),
   });
   await rm(root, { recursive: true, force: true });
+});
+
+describe.runIf(BSDTAR !== null)("ISO 9660 images through libarchive", () => {
+  it("detects, inventories and extracts producer-made images without a suffix", async () => {
+    const { root, source } = await workspace("iso");
+    const files = {
+      "hello.txt": "ISO payload\n",
+      "nested/other.txt": "nested bytes\n",
+    };
+    await mkdir(join(source, "nested"));
+    for (const [name, body] of Object.entries(files))
+      await writeFile(join(source, name), body);
+    const archive = join(root, "disc-image");
+    await promisify(execFile)(BSDTAR!, [
+      "-cf",
+      archive,
+      "--format",
+      "iso9660",
+      "-C",
+      source,
+      "hello.txt",
+      "nested",
+    ]);
+    const bytes = await readFile(archive);
+    const detection = detectFormatCandidates({
+      prefix: bytes.subarray(0, 32775),
+      fileSize: bytes.length,
+      name: archive,
+    });
+    expect(detection.candidates).toContainEqual(
+      expect.objectContaining({
+        format: "iso",
+        evidence: expect.objectContaining({ offset: 32768 }),
+      }),
+    );
+    expect(await parseBinaryTarget(archive)).toMatchObject({
+      ok: true,
+      value: { kind: "archive", format: "iso" },
+    });
+    const inventory = await inventoryArtifact(archive);
+    expect(inventory.manifest.root_format).toBe("iso");
+    expectMembers(inventory, files);
+    expect(inventory.provenance).toContainEqual(
+      expect.objectContaining({ tool: "bsdtar", exit_code: 0 }),
+    );
+    const output = join(root, "out");
+    await extract(archive, "iso", output);
+    expect(await readTree(output)).toEqual(files);
+    expect(await readFile(archive)).toEqual(bytes);
+
+    const denied = await inventoryArtifact(archive, {
+      archive: { externalDecoders: "deny", maximumDecodedBytes: 1024 ** 3 },
+    });
+    expect(fileOccurrences(denied).size).toBe(0);
+    expect(denied.limitations.join(" ")).toMatch(/external bsdtar program/u);
+    await expect(
+      inventoryArtifact(archive, {
+        archive: { externalDecoders: "allow", maximumDecodedBytes: 512 },
+      }),
+    ).rejects.toMatchObject({ reason: "limit" });
+
+    const truncated = join(root, "truncated.iso");
+    await writeFile(truncated, bytes.subarray(0, 32775));
+    await expect(inventoryArtifact(truncated)).rejects.toMatchObject({
+      reason: "format",
+    });
+    await writeFile(truncated, bytes.subarray(0, 34816));
+    await expect(inventoryArtifact(truncated)).rejects.toMatchObject({
+      reason: "format",
+    });
+    const inconsistent = Buffer.from(bytes);
+    inconsistent.writeUInt32BE(0, 32768 + 84);
+    await writeFile(truncated, inconsistent);
+    await expect(inventoryArtifact(truncated)).rejects.toMatchObject({
+      reason: "format",
+    });
+  });
 });

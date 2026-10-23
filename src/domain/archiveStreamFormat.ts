@@ -6,6 +6,7 @@
  * archive.
  */
 export const ARCHIVE_STREAM_FORMATS = [
+  "iso",
   "tar",
   "gzip",
   "xz",
@@ -24,6 +25,7 @@ export type ArchiveStreamFormat = (typeof ARCHIVE_STREAM_FORMATS)[number];
 
 /** Formats with a streamed member reader; RAR is identified only. */
 export const READABLE_ARCHIVE_STREAM_FORMATS = [
+  "iso",
   "tar",
   "gzip",
   "xz",
@@ -85,6 +87,19 @@ const startsWith = (
 ) =>
   bytes.length >= offset + magic.length &&
   magic.every((byte, index) => bytes[offset + index] === byte);
+
+/** ISO 9660 volume descriptors start after the 16-sector system area. */
+export const ISO_DESCRIPTOR_OFFSET = 16 * 2048;
+export const ISO_SIGNATURE_BYTES = ISO_DESCRIPTOR_OFFSET + 7;
+
+/** A volume descriptor header, including boot and supplementary descriptors. */
+export const hasIsoSignature = (prefix: Uint8Array): boolean =>
+  (prefix[ISO_DESCRIPTOR_OFFSET] ?? 255) <= 3 &&
+  startsWith(
+    prefix,
+    ISO_DESCRIPTOR_OFFSET + 1,
+    [0x43, 0x44, 0x30, 0x30, 0x31, 1],
+  );
 
 /** 7z signature header `7z\xBC\xAF\x27\x1C`. */
 export const has7zSignature = (prefix: Uint8Array): boolean =>
@@ -235,6 +250,7 @@ export const hasTarHeader = (prefix: Uint8Array): boolean =>
 export const classifyArchiveStreamBytes = (
   prefix: Uint8Array,
 ): ArchiveStreamFormat | undefined => {
+  if (hasIsoSignature(prefix)) return "iso";
   if (hasDebSignature(prefix)) return "deb";
   if (hasRpmLead(prefix)) return "rpm";
   if (hasSquashfsSuperblock(prefix)) return "squashfs";

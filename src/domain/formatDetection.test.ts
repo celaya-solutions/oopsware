@@ -1,4 +1,8 @@
 import { gzipSync } from "node:zlib";
+import {
+  ISO_DESCRIPTOR_OFFSET,
+  ISO_SIGNATURE_BYTES,
+} from "./archiveStreamFormat.js";
 
 import { describe, expect, it } from "vitest";
 
@@ -26,6 +30,50 @@ const detect = (
     name,
     trailer,
   });
+
+describe("ISO volume descriptor evidence", () => {
+  it.each([0, 1, 2, 3])(
+    "recognizes descriptor type %i without relying on a suffix",
+    (type) => {
+      const bytes = Buffer.alloc(ISO_SIGNATURE_BYTES);
+      bytes[ISO_DESCRIPTOR_OFFSET] = type;
+      bytes.write("CD001\x01", ISO_DESCRIPTOR_OFFSET + 1, "latin1");
+      expect(detect(bytes, "image.bin").candidates).toContainEqual(
+        expect.objectContaining({
+          format: "iso",
+          evidence: {
+            offset: ISO_DESCRIPTOR_OFFSET,
+            length: 7,
+            observed_hex: bytes.subarray(ISO_DESCRIPTOR_OFFSET).toString("hex"),
+          },
+        }),
+      );
+    },
+  );
+
+  it("does not mistake a name, truncated header, wrong version or UDF marker for ISO", () => {
+    const bytes = Buffer.alloc(ISO_SIGNATURE_BYTES);
+    bytes[ISO_DESCRIPTOR_OFFSET] = 1;
+    bytes.write("CD001\x02", ISO_DESCRIPTOR_OFFSET + 1, "latin1");
+    expect(detect(bytes, "image.iso").candidates).toEqual([]);
+    bytes.write("NSR03\x01", ISO_DESCRIPTOR_OFFSET + 1, "latin1");
+    expect(detect(bytes, "image.iso").candidates).toEqual([]);
+    const partial = detect(
+      bytes.subarray(0, 8192),
+      "image.iso",
+      null,
+      bytes.length,
+    );
+    expect(partial.candidates).toEqual([]);
+    expect(partial.contradictions).toEqual([]);
+    expect(partial.limitations).toContain(
+      "The ISO 9660 volume descriptor header was not examined.",
+    );
+    expect(detect(Buffer.from("not an ISO"), "image.iso").candidates).toEqual(
+      [],
+    );
+  });
+});
 
 const formats = (detection: FormatDetection) =>
   detection.candidates.map((candidate) => candidate.format);

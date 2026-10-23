@@ -16,7 +16,8 @@ import {
 } from "../domain/apple/machoContainer.js";
 
 /** Initial bytes required by the other bounded format classifiers. */
-export const ARTIFACT_CLASSIFICATION_PREFIX_BYTES = 8_192;
+export { FORMAT_SIGNATURE_PREFIX_BYTES as ARTIFACT_CLASSIFICATION_PREFIX_BYTES } from "../domain/formatSignatures.js";
+import { FORMAT_SIGNATURE_PREFIX_BYTES as ARTIFACT_CLASSIFICATION_PREFIX_BYTES } from "../domain/formatSignatures.js";
 
 /** Retained prefix plus bounded format-specific observations from the stream. */
 export interface ArtifactClassificationEvidence {
