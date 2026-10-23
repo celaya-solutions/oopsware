@@ -1,12 +1,12 @@
 ```text
 Document:    Oopsware
-Version:     v1.23.5
+Version:     v1.23.6
 Author:      Celaya Solutions
 Contact:     hello@celayasolutions.com
 Date:        2026-10-22
-SHA256:      5064ff66c090dd2eb9f6520a284b894c120f371d15d73d74fce73ff4984e8bb1
+SHA256:      46d4e692ca9b560c8e1a2c2860a9dcacce198082505323b5ec973d6868cf9684
 Chain:       solana-mainnet
-Tx:          5b17dnwEoyaf8gDEJMYtTLwgizapfXcBtoGRGvZsigmNzHfbavjwEdjAeshW1uBEYprLp444DgYQ9uKnMHtVcWuU
+Tx:          HHiGQyJXBKrAKHnmkAhKsGmBokZvoRnhzKcefo5FftRB43Y63A63umLuhWzMsbpyvkc4hWRgup3Vhf7BL6oJtwz
 License:     All Rights Reserved / Celaya Solutions
 ```
 
@@ -91,7 +91,7 @@ tested against the real tool that made the file.
 | WebAssembly             | `inspect_wasm_module`, `inspect_wasm_function`, `convert_wasm_to_text`, `convert_wasm_to_c`        | modules built by `rustc`; wabt.js validation; C checked by clang                                 |
 | JVM classes, JARs, AARs | `inspect_jvm_artifact`, `inspect_jvm_class`, `inspect_jvm_method`, `decompile_jvm_class`           | 13,637 real classes, 2.78 million instructions match `javap`                                     |
 | Python                  | `inspect_python_artifact`, `inspect_python_module`, `inspect_python_code`, `decompile_python_code` | whole standard libraries of six releases, ~19 million instructions match `dis`; pip-built wheels |
-| Archives                | `inspect_artifact`, `extract_artifact`                                                             | fixtures made by the real tar, gzip, xz and 7zz; hostile names built by hand                     |
+| Archives                | `inspect_artifact`, `extract_artifact`                                                             | fixtures made by the real tar, gzip, xz, 7zz and bsdtar (ISO 9660); hostile names built by hand                     |
 | Structured text         | `inspect_document`                                                                                 | hostile Markdown links and HTML, duplicate JSON keys, YAML alias bombs, XML entities             |
 
 Some things these readers refuse on purpose: they never call an interpreter's
@@ -125,7 +125,7 @@ local. See the [hosting guide](docs/public-hosting.md).
 
 ## Every file type it reads
 
-This is the full list, as of 2026-10-20. "Read" means the bytes are parsed
+This is the full list, as of 2026-10-22. "Read" means the bytes are parsed
 and reported; "identified" means Oopsware can name the format but does not
 look inside yet. A name or extension is only a hint: formats are confirmed
 from the bytes. Nothing in this list is run, installed, mounted or loaded.
@@ -232,6 +232,20 @@ reader below and opens nested archives for you; see the
 | Unity IL2CPP         | `global-metadata.dat`, with `GameAssembly` or `libil2cpp.so`                 | `inspect_il2cpp_metadata`                                         | Types, methods, strings and method addresses (metadata v24–v39)                                                                                                                                                                                                                                                     |
 | Game and app folders | install folders                                                              | `inspect_desktop_application`                                     | Names the runtime: .NET, Unity, Unreal, Godot, GameMaker, Electron. Identifies only                                                                                                                                                                                                                                 |
 | Any folder           | a directory                                                                  | `inspect_artifact`                                                | Full inventory                                                                                                                                                                                                                                                                                                      |
+
+To inspect or extract an ISO 9660 image from the CLI:
+
+```sh
+oopsware identify-artifact ./disc.iso
+oopsware inspect-artifact ./disc.iso
+oopsware extract-artifact ./disc.iso
+```
+
+ISO reading needs an installed `bsdtar` (libarchive). The image is never mounted;
+extraction writes regular files into a new output directory and leaves the image
+unchanged. Joliet and Rock Ridge names follow libarchive. UDF-only images are not
+supported. Real ISO fixtures were checked on macOS through the CLI and MCP;
+Windows and Linux ISO decoding have not been verified.
 
 </details>
 
