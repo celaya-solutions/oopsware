@@ -1,4 +1,4 @@
-import { readClientPolicyBlock } from "./GeminiClientSettings.js";
+import { readClientPolicyBlock } from "./ClientPolicyBlock.js";
 import {
   readClientConfigurationFiles,
   effectiveClientConfiguration,
@@ -761,12 +761,12 @@ const clientConfigurationDesired = async (
   );
   if (!environment.ok) throw environment.error;
   const registrationEnvironment =
-    client.name === "kimi" &&
+    client.defaultInputSchemaProfile !== undefined &&
     snapshotEnvironment(environment.value).REA_MCP_INPUT_SCHEMA_PROFILE ===
       undefined
       ? {
           ...environment.value,
-          REA_MCP_INPUT_SCHEMA_PROFILE: "compact",
+          REA_MCP_INPUT_SCHEMA_PROFILE: client.defaultInputSchemaProfile,
         }
       : environment.value;
   const registration = clientRegistrationEntry(

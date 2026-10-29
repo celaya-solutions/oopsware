@@ -19,6 +19,9 @@ License:     All Rights Reserved / Celaya Solutions
   and internal publication notes from the distributed source.
 - Preserved the CLI/MCP interfaces, existing settings, test coverage, and
   original license notices.
+- Added `freebuff` as a setup, doctor and uninstall client. It registers REA in
+  `~/.agents/mcp.json`, which Freebuff and Codebuff load, selects the compact
+  input-schema profile by default, and refuses files Freebuff would skip.
 
 The source currently identifies its runtime as 6.7.0. This entry does not announce
 an npm release. See [CREDITS.md](CREDITS.md) for authorship and licensing.

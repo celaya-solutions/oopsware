@@ -111,7 +111,7 @@ const workspaceTrusted = async (
 };
 
 /** Check effective Gemini scopes while preserving their authority and source identity. */
-export const readClientPolicyBlock = async (
+export const readGeminiPolicyBlock = async (
   client: SetupClient,
   userDocument?: ClientConfigurationDocument,
   desiredRegistration?: unknown,

@@ -38,6 +38,8 @@ export interface SetupClient {
   readonly msixPackage?: MsixPackageView;
   /** A running client can rewrite its configuration from memory. */
   readonly quitBeforeSetup?: boolean;
+  /** Input-schema profile setup selects when the registration names none. */
+  readonly defaultInputSchemaProfile?: "compact";
   readonly format?:
     | "json"
     | "claude_code"
@@ -46,6 +48,7 @@ export interface SetupClient {
     | "copilot_cli"
     | "opencode"
     | "commandcode"
+    | "freebuff"
     | "grok"
     | "omp"
     | "pi"
@@ -102,6 +105,7 @@ interface ClientDefinitionBase {
   readonly displayName: string;
   readonly format: NonNullable<SetupClient["format"]>;
   readonly quitBeforeSetup?: boolean;
+  readonly defaultInputSchemaProfile?: "compact";
   readonly zcodeFallbackPath?: (context: ClientPathContext) => string;
   readonly skillPath?: ClientPath;
   readonly configPaths?: (context: ClientPathContext) => readonly string[];
@@ -366,6 +370,18 @@ const commandCodeDirectory = ({ home }: ClientPathContext): string =>
   join(home, ".commandcode");
 
 /**
+ * Freebuff and Codebuff keep login and settings in `~/.config/manicode`, or in
+ * an absolute `FREEBUFF_CONFIG_DIR`; they refuse to start with a relative one.
+ * This is detection evidence only: both read MCP servers from `~/.agents`.
+ */
+const freebuffConfigDirectory = ({ home, env }: ClientPathContext): string => {
+  const override = env.FREEBUFF_CONFIG_DIR;
+  return override !== undefined && isAbsolute(override)
+    ? override
+    : join(home, ".config", "manicode");
+};
+
+/**
  * OpenCode appends `OPENCODE_CONFIG_DIR` only when the value is non-empty.
  * An empty variable is the same as unset and leaves the XDG directory in place.
  */
@@ -585,6 +601,7 @@ export const SUPPORTED_CLIENT_DEFINITIONS = [
       join(kimiDirectory(context), "mcp.json"),
     markerPath: kimiDirectory,
     format: "kimi",
+    defaultInputSchemaProfile: "compact",
   },
   {
     name: "vscode",
@@ -679,6 +696,16 @@ export const SUPPORTED_CLIENT_DEFINITIONS = [
     markerPath: [".zcode", "cli"],
     skillPath: [".zcode", "skills"],
     format: "zcode",
+  },
+  {
+    // Codebuff reads the same file; ZCode reads it as a fallback.
+    name: "freebuff",
+    displayName: "Freebuff",
+    configPath: [".agents", "mcp.json"],
+    markerPath: freebuffConfigDirectory,
+    format: "freebuff",
+    // Freebuff advertises every tool of every server to the model on each request.
+    defaultInputSchemaProfile: "compact",
   },
   {
     name: "dsh",
@@ -781,6 +808,11 @@ export const supportedClients = (
         ...(definition.quitBeforeSetup === true
           ? { quitBeforeSetup: true }
           : {}),
+        ...(definition.defaultInputSchemaProfile === undefined
+          ? {}
+          : {
+              defaultInputSchemaProfile: definition.defaultInputSchemaProfile,
+            }),
         format: definition.format,
       };
     } catch (cause: unknown) {

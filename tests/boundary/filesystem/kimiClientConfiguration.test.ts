@@ -67,6 +67,7 @@ describe("Kimi Code configuration paths and skills", () => {
       configPath: join(directory, "mcp.json"),
       markerPath: directory,
       format: "kimi",
+      defaultInputSchemaProfile: "compact",
     });
   });
 

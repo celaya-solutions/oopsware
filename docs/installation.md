@@ -503,6 +503,7 @@ hosted connector; see [its configuration](client-configuration.md#other-client-s
 | Trae               | `trae`           |
 | WorkBuddy          | `workbuddy`      |
 | ZCode              | `zcode`          |
+| Freebuff           | `freebuff`       |
 | DeepSeek Harness   | `dsh`            |
 
 `droid`, `dsh`, `kimi`, `qoder`, `trae`, `workbuddy`, and `zcode` arrived with

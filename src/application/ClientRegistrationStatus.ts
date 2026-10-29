@@ -1,4 +1,4 @@
-import { readClientPolicyBlock } from "./GeminiClientSettings.js";
+import { readClientPolicyBlock } from "./ClientPolicyBlock.js";
 import { readEffectiveClientRegistrationConfiguration } from "./ClientConfigurationFiles.js";
 import {
   clientServerForcedEnabled,
@@ -261,12 +261,16 @@ export const readClientRegistrationInspections = async (
           : client;
       const registration = parseRegistration(raw, effectiveClient);
       const registrationEnvironment =
-        client.name === "kimi" || client.name === "codex"
+        client.name === "kimi" ||
+        client.name === "codex" ||
+        client.defaultInputSchemaProfile !== undefined
           ? await clientRegistrationEnvironmentDetailsWithBudget(
               parsed,
               {},
               "effective",
-              options.resolveProviderRequestBudget,
+              client.name === "kimi" || client.name === "codex"
+                ? options.resolveProviderRequestBudget
+                : undefined,
               options.platform,
             )
           : undefined;
@@ -298,7 +302,7 @@ export const readClientRegistrationInspections = async (
         client: effectiveClient,
         currentCommandPath,
         platform: options.platform ?? process.platform,
-        kimiInputSchemaProfileSelected:
+        inputSchemaProfileSelected:
           registrationEnvironment?.ok === true &&
           snapshotEnvironment(
             registrationEnvironment.value.values,
@@ -375,13 +379,13 @@ const registrationAligned = ({
   client,
   currentCommandPath,
   platform,
-  kimiInputSchemaProfileSelected,
+  inputSchemaProfileSelected,
 }: {
   readonly registration: z.output<typeof registrationSchema>;
   readonly client: SetupClient;
   readonly currentCommandPath: string | undefined;
   readonly platform: NodeJS.Platform;
-  readonly kimiInputSchemaProfileSelected: boolean;
+  readonly inputSchemaProfileSelected: boolean;
 }): "aligned" | "stale" | "unknown" => {
   const command = [registration.command, ...registration.args];
   const identity = classifyClientRegistrationCommand(
@@ -408,11 +412,16 @@ const registrationAligned = ({
       registration.toolTimeoutMs === undefined)
   )
     return "stale";
-  if (client.name === "kimi" && !kimiInputSchemaProfileSelected) return "stale";
+  if (
+    client.defaultInputSchemaProfile !== undefined &&
+    !inputSchemaProfileSelected
+  )
+    return "stale";
   if (
     (client.format === "kimi" ||
       client.format === "omp" ||
-      client.format === "pi") &&
+      client.format === "pi" ||
+      client.format === "freebuff") &&
     registration.type !== undefined &&
     registration.type !== "stdio"
   )
@@ -493,7 +502,8 @@ const parseRegistration = (
   if (
     (client.format === "kimi" ||
       client.format === "omp" ||
-      client.format === "pi") &&
+      client.format === "pi" ||
+      client.format === "freebuff") &&
     registration.type !== undefined &&
     registration.type !== "stdio"
   )

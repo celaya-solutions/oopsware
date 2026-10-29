@@ -361,6 +361,41 @@ as stale, and rerunning setup removes the flag to repair it. Native configuratio
 uses strict JSON; setup refuses comments, trailing commas and a BOM rather than
 writing a registration ZCode cannot load.
 
+## Freebuff
+
+For [Freebuff](https://github.com/CodebuffAI/codebuff) (the free build of
+Codebuff), setup writes a `type: "stdio"` entry under `mcpServers.rea` in
+`~/.agents/mcp.json` and installs the bundled skill under `~/.agents/skills`.
+Freebuff and Codebuff both load that file and that skill directory, so one
+registration serves both. Setup detects them from `~/.config/manicode`, or from
+an absolute `FREEBUFF_CONFIG_DIR`; that variable does not move `mcp.json`.
+ZCode reads the same file as its fallback (see [ZCode](#zcode)), and uninstall
+removes the `rea` entry from it once.
+
+Freebuff reads the file with strict `JSON.parse` and skips all of it when any
+entry carries a member outside its schema: `type`, `command`, `args` and `env`
+for stdio servers; `type`, `url`, `params` and `headers` for remote ones. Setup
+writes only those stdio members and refuses to register beside an entry
+Freebuff would reject, naming it; doctor reports the same as stale. Freebuff
+also resolves every `env` value that starts with `$` from its own environment,
+so setup refuses such a value in REA's entry. A BOM, comments or trailing
+commas make the file unreadable to Freebuff; setup leaves such a file
+untouched. An empty file holds no servers, so setup replaces it.
+
+Freebuff advertises every tool of every configured server to the model on each
+request, without a filter. New or refreshed registrations therefore select
+`REA_MCP_INPUT_SCHEMA_PROFILE=compact` unless the entry or setup environment
+selects `full` or `compact` explicitly; doctor reports a registration with no
+explicit profile as stale. Freebuff calls MCP tools with the SDK's default
+60-second request timeout and has no registration setting to raise it. A cold
+native startup can exceed it; follow the
+[close/reopen recovery](mcp-contracts.md#ghidra-first-query-deadlines-and-recovery), or run long native analysis
+through the CLI. Start a new Freebuff session to pick up changes.
+
+These rules come from reading Codebuff's source at commit `d8c0eed`
+(2026-10-29). Setup, doctor and uninstall are covered by filesystem tests; a
+live Freebuff or Codebuff session is unverified.
+
 ## DeepSeek Harness
 
 DeepSeek Harness registers MCP clients through a Cordis YAML patch sequence

@@ -76,6 +76,7 @@ describe("client configuration filesystem lifecycle", () => {
       "qoder",
       "droid",
       "zcode",
+      "freebuff",
       "dsh",
       "grok_bot",
     ]);

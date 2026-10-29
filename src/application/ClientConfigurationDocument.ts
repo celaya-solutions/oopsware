@@ -145,8 +145,10 @@ const parseDocument = (
   // comments, trailing commas, a BOM, or an empty existing file must be
   // rejected instead of registering into a document the client cannot load.
   // Kimi also reads mcp.json with JSON.parse and an empty-file fallback.
-  if (format === "pi" || format === "kimi") {
-    if (format === "kimi" && text.trim().length === 0) return {};
+  // Freebuff reads it with JSON.parse too and skips a file it cannot parse, so
+  // an empty file holds no servers to preserve.
+  if (format === "pi" || format === "kimi" || format === "freebuff") {
+    if (format !== "pi" && text.trim().length === 0) return {};
     return requireObject(JSON.parse(text), "The configuration root");
   }
   // An empty file, which some clients create before any server is added,
@@ -1684,6 +1686,7 @@ export const clientRegistrationEntry = (
     case "vscode":
     case "omp":
     case "pi":
+    case "freebuff":
       return {
         type: "stdio",
         command: executable,
